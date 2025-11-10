@@ -1,0 +1,42 @@
+{
+  "name": "job-tracking-dashboard",
+  "version": "1.0.0",
+  "description": "A zero-friction job application tracker with automatic parsing and intelligent tracking",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsech3/Simple-Job-Application-Tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jsech3/Simple-Job-Application-Tracker/issues"
+  },
+  "homepage": "https://github.com/jsech3/Simple-Job-Application-Tracker#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "date-fns": "^4.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.4.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2"
+  }
+}
