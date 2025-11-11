@@ -98,8 +98,8 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Job Applications</h1>
-          <p className="text-gray-600 mt-1">{jobs.length} total applications</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Job Applications</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">{jobs.length} total applications</p>
         </div>
         <button
           onClick={onAddJob}
@@ -113,7 +113,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="md:col-span-2 tour-search">
@@ -122,7 +122,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by title, company, or location..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -131,7 +131,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Statuses</option>
               {uniqueStatuses.map(status => (
@@ -145,7 +145,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
             <select
               value={filterWorkEnv}
               onChange={(e) => setFilterWorkEnv(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Environments</option>
               {Object.values(WorkEnvironment).map(env => (
@@ -157,11 +157,11 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
 
         {/* Sort Options */}
         <div className="flex flex-wrap gap-2 mt-4">
-          <span className="text-sm text-gray-600 mr-2">Sort by:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300 mr-2">Sort by:</span>
           <button
             onClick={() => toggleSort('date')}
             className={`px-3 py-1 rounded text-sm ${
-              sortField === 'date' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              sortField === 'date' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             Date {sortField === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -169,7 +169,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
           <button
             onClick={() => toggleSort('company')}
             className={`px-3 py-1 rounded text-sm ${
-              sortField === 'company' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              sortField === 'company' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             Company {sortField === 'company' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -177,7 +177,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
           <button
             onClick={() => toggleSort('title')}
             className={`px-3 py-1 rounded text-sm ${
-              sortField === 'title' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              sortField === 'title' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             Title {sortField === 'title' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -185,7 +185,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
           <button
             onClick={() => toggleSort('status')}
             className={`px-3 py-1 rounded text-sm ${
-              sortField === 'status' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              sortField === 'status' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             Status {sortField === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -195,7 +195,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
 
       {/* Results Count */}
       {filteredAndSortedJobs.length !== jobs.length && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           Showing {filteredAndSortedJobs.length} of {jobs.length} applications
         </div>
       )}
