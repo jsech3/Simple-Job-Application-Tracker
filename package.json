@@ -21,9 +21,12 @@
   "homepage": "https://github.com/jsech3/Simple-Job-Application-Tracker#readme",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
+    "@headlessui/react": "^2.2.9",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.24",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hotkeys-hook": "^5.2.1",
     "recharts": "^3.4.1",
     "uuid": "^13.0.0"
   },

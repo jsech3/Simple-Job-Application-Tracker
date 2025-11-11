@@ -7,6 +7,7 @@ import { JobDetail } from './components/JobDetail';
 import { Statistics } from './components/Statistics';
 import { FollowUpReminders } from './components/FollowUpReminders';
 import { EmailGenerator } from './components/EmailGenerator';
+import { TestingPanel } from './components/TestingPanel';
 
 type View = 'dashboard' | 'add' | 'detail' | 'stats';
 
@@ -215,6 +216,16 @@ function App() {
           </p>
         </div>
       </footer>
+
+      {/* Testing Panel (Development Only) */}
+      {import.meta.env.DEV && (
+        <TestingPanel
+          onDataChange={() => {
+            loadJobs();
+            loadReminders();
+          }}
+        />
+      )}
     </div>
   );
 }
