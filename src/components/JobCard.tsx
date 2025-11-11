@@ -1,16 +1,29 @@
 import { JobApplication, ApplicationStatus } from '../types';
 import { formatDistanceToNow } from 'date-fns';
+import { QuickStatusDropdown } from './QuickStatusDropdown';
+import { StorageService } from '../services/storage';
 
 interface JobCardProps {
   job: JobApplication;
   onClick: () => void;
+  onUpdate?: () => void;
 }
 
-export const JobCard = ({ job, onClick }: JobCardProps) => {
+export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
   // Get latest status
   const latestStatus = job.statusUpdates.length > 0 && job.statusUpdates[job.statusUpdates.length - 1].nextStep
     ? job.statusUpdates[job.statusUpdates.length - 1].nextStep
     : ApplicationStatus.Applied;
+
+  // Handle status change
+  const handleStatusChange = (newStatus: ApplicationStatus) => {
+    StorageService.addStatusUpdate(job.id, {
+      date: new Date().toISOString(),
+      status: `Status changed to ${newStatus}`,
+      nextStep: newStatus,
+    });
+    onUpdate?.();
+  };
 
   // Format compensation
   const formatCompensation = () => {
@@ -74,9 +87,10 @@ export const JobCard = ({ job, onClick }: JobCardProps) => {
           <h3 className="text-lg font-semibold text-gray-900 mb-1">{job.parsedData.title}</h3>
           <p className="text-md text-gray-700">{job.parsedData.company}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor()}`}>
-          {latestStatus}
-        </span>
+        <QuickStatusDropdown
+          currentStatus={latestStatus}
+          onStatusChange={handleStatusChange}
+        />
       </div>
 
       {/* Details */}

@@ -1,17 +1,19 @@
 import { useState, useMemo } from 'react';
 import { JobApplication, ApplicationStatus, WorkEnvironment } from '../types';
 import { JobCard } from './JobCard';
+import { EmptyState } from './EmptyState';
 
 interface DashboardProps {
   jobs: JobApplication[];
   onJobClick: (job: JobApplication) => void;
   onAddJob: () => void;
+  onJobUpdate?: () => void;
 }
 
 type SortField = 'date' | 'company' | 'title' | 'status';
 type SortOrder = 'asc' | 'desc';
 
-export const Dashboard = ({ jobs, onJobClick, onAddJob }: DashboardProps) => {
+export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: DashboardProps) => {
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -101,7 +103,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob }: DashboardProps) => {
         </div>
         <button
           onClick={onAddJob}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+          className="tour-add-button bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -114,7 +116,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob }: DashboardProps) => {
       <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 tour-search">
             <input
               type="text"
               value={searchQuery}
@@ -200,32 +202,22 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob }: DashboardProps) => {
 
       {/* Job Cards Grid */}
       {filteredAndSortedJobs.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No applications found</h3>
-          <p className="text-gray-600 mb-4">
-            {jobs.length === 0
-              ? "Get started by adding your first job application"
-              : "Try adjusting your filters or search query"}
-          </p>
-          {jobs.length === 0 && (
-            <button
-              onClick={onAddJob}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition inline-flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add First Application
-            </button>
-          )}
-        </div>
+        <EmptyState
+          type={jobs.length === 0 ? 'no-jobs' : 'no-results'}
+          action={jobs.length === 0 ? {
+            label: 'Add First Application',
+            onClick: onAddJob,
+          } : undefined}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredAndSortedJobs.map(job => (
-            <JobCard key={job.id} job={job} onClick={() => onJobClick(job)} />
+            <JobCard
+              key={job.id}
+              job={job}
+              onClick={() => onJobClick(job)}
+              onUpdate={onJobUpdate}
+            />
           ))}
         </div>
       )}
