@@ -17,7 +17,8 @@ interface AddJobFormProps {
 }
 
 export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
-  const [step, setStep] = useState<'url' | 'parsing' | 'review' | 'manual'>('url');
+  const [step, setStep] = useState<'input' | 'parsing' | 'review' | 'manual'>('input');
+  const [jobText, setJobText] = useState('');
   const [url, setUrl] = useState('');
   const [parsedData, setParsedData] = useState<ParsedJobData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,10 +40,10 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
   const [hasApplied, setHasApplied] = useState(true);
   const [userNotes, setUserNotes] = useState('');
 
-  // Handle URL submission and parsing
-  const handleParseUrl = async () => {
-    if (!url.trim()) {
-      setError('Please enter a valid URL');
+  // Handle job description parsing
+  const handleParse = async () => {
+    if (!jobText.trim()) {
+      setError('Please paste the job description');
       return;
     }
 
@@ -51,7 +52,8 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
     setStep('parsing');
 
     try {
-      const result = await ClaudeService.parseJobPosting(url);
+      // Use the new text-based parsing method
+      const result = await ClaudeService.parseJobDescriptionText(jobText, url || undefined);
 
       if (result.success && result.data) {
         setParsedData(result.data);
@@ -117,53 +119,68 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
     }
   };
 
-  // Render URL input step
-  if (step === 'url') {
+  // Render job description input step
+  if (step === 'input') {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Add Job Application</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add Job Application</h2>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Paste Job Posting URL
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Paste Job Description
+          </label>
+          <textarea
+            value={jobText}
+            onChange={(e) => setJobText(e.target.value)}
+            placeholder="Paste the entire job posting here (Ctrl+A, Ctrl+C from the job page)...&#10;&#10;Example:&#10;Senior Software Engineer&#10;Acme Corp - San Francisco, CA&#10;$120k - $180k&#10;&#10;We're looking for an experienced engineer to join our team..."
+            rows={12}
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+            autoFocus
+          />
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            💡 <strong>Tip:</strong> Copy the entire job posting from LinkedIn, Indeed, or any job site - AI will extract the details
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Job URL (Optional)
           </label>
           <input
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleParseUrl()}
             placeholder="https://www.linkedin.com/jobs/..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            autoFocus
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-          <p className="mt-2 text-sm text-gray-500">
-            Supports LinkedIn, Indeed, ZipRecruiter, Glassdoor, and company career pages
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Helps identify the platform (LinkedIn, Indeed, etc.)
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
             {error}
           </div>
         )}
 
         <div className="flex gap-3">
           <button
-            onClick={handleParseUrl}
-            disabled={isLoading}
-            className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
+            onClick={handleParse}
+            disabled={isLoading || !jobText.trim()}
+            className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
           >
-            {isLoading ? 'Parsing...' : 'Parse Job Posting'}
+            {isLoading ? 'Parsing with AI...' : '✨ Parse with AI'}
           </button>
           <button
             onClick={() => setStep('manual')}
-            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
             Manual Entry
           </button>
           <button
             onClick={onCancel}
-            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
             Cancel
           </button>
@@ -175,11 +192,11 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
   // Render parsing step
   if (step === 'parsing') {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h3 className="text-lg font-medium text-gray-900">Parsing job posting...</h3>
-          <p className="text-sm text-gray-500 mt-2">This may take a few seconds</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Parsing job posting with AI...</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Extracting title, company, salary, and more...</p>
         </div>
       </div>
     );
@@ -187,21 +204,21 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
 
   // Render review/manual entry form
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        {step === 'review' ? 'Review Parsed Data' : 'Manual Entry'}
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        {step === 'review' ? '✨ Review AI-Parsed Data' : 'Manual Entry'}
       </h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
           {error}
         </div>
       )}
 
       {step === 'review' && parsedData?.confidence && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800 font-medium mb-2">Parsing Confidence:</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-sm text-blue-800 dark:text-blue-300 font-medium mb-2">AI Confidence Scores:</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-blue-700 dark:text-blue-300">
             <div>Title: {parsedData.confidence.title}%</div>
             <div>Company: {parsedData.confidence.company}%</div>
             <div>Work Environment: {parsedData.confidence.workEnvironment}%</div>
@@ -213,49 +230,49 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Job Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Job Title <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={formData.title}
             onChange={(e) => updateField('title', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Company */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Company <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={formData.company}
             onChange={(e) => updateField('company', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Location */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
           <input
             type="text"
             value={formData.location}
             onChange={(e) => updateField('location', e.target.value)}
             placeholder="City, State, Country"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Platform */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Platform</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Platform</label>
           <select
             value={formData.platform}
             onChange={(e) => updateField('platform', e.target.value as JobPlatform)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             {Object.values(JobPlatform).map(platform => (
               <option key={platform} value={platform}>{platform}</option>

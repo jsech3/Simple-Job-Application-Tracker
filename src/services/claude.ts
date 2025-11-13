@@ -79,23 +79,20 @@ export class ClaudeService {
     return this.client;
   }
 
-  // Parse job posting from URL
-  static async parseJobPosting(url: string): Promise<JobParseResponse> {
+  // Parse job posting from text content (NEW - bypasses CORS)
+  static async parseJobDescriptionText(text: string, url?: string): Promise<JobParseResponse> {
     try {
-      // Fetch webpage content
-      const content = await fetchWebpageContent(url);
-
-      // Detect platform
-      const platform = detectPlatform(url);
+      // Detect platform from URL if provided
+      const platform = url ? detectPlatform(url) : JobPlatform.Other;
 
       // Create prompt for Claude
       const prompt = `You are a job posting parser. Extract structured information from the following job posting content.
 
-Job Posting URL: ${url}
+${url ? `Job Posting URL: ${url}` : 'Source: User provided text'}
 Platform: ${platform}
 
 Content:
-${content.substring(0, 10000)} // Limit to first 10k chars
+${text.substring(0, 10000)} // Limit to first 10k chars
 
 Please extract the following information and return it as a JSON object:
 {
@@ -164,6 +161,23 @@ Important:
       };
     } catch (error) {
       console.error('Error parsing job posting:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to parse job posting',
+      };
+    }
+  }
+
+  // Parse job posting from URL (legacy - tries to fetch, will hit CORS)
+  static async parseJobPosting(url: string): Promise<JobParseResponse> {
+    try {
+      // Fetch webpage content
+      const content = await fetchWebpageContent(url);
+
+      // Use the text-based parser
+      return this.parseJobDescriptionText(content, url);
+    } catch (error) {
+      console.error('Error parsing job posting from URL:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to parse job posting',
