@@ -25,6 +25,12 @@ export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
     onUpdate?.();
   };
 
+  // Handle delete
+  const handleDelete = () => {
+    StorageService.deleteApplication(job.id);
+    onUpdate?.();
+  };
+
   // Format compensation
   const formatCompensation = () => {
     if (!job.parsedData.compensation) return 'Not specified';
@@ -79,7 +85,7 @@ export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:shadow-lg transition-shadow cursor-pointer"
+      className="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:shadow-lg transition-shadow cursor-pointer [&:has([data-headlessui-state~='open'])]:z-50"
     >
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
@@ -90,6 +96,7 @@ export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
         <QuickStatusDropdown
           currentStatus={latestStatus}
           onStatusChange={handleStatusChange}
+          onDelete={handleDelete}
         />
       </div>
 
