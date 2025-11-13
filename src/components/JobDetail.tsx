@@ -70,17 +70,17 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full my-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full my-8">
         {/* Header */}
-        <div className="border-b border-gray-200 p-6">
+        <div className="border-b border-gray-200 dark:border-gray-700 p-6">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{job.parsedData.title}</h2>
-              <p className="text-lg text-gray-700">{job.parsedData.company}</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{job.parsedData.title}</h2>
+              <p className="text-lg text-gray-700 dark:text-gray-300">{job.parsedData.company}</p>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -90,16 +90,16 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
 
           {/* Quick Info */}
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium">
               {latestStatus}
             </span>
-            <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm">
               {job.parsedData.workEnvironment}
             </span>
-            <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm">
               {job.parsedData.workType}
             </span>
-            <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm">
               {job.parsedData.platform}
             </span>
           </div>
@@ -110,38 +110,38 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
           {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Location</h3>
-              <p className="text-gray-900">{job.parsedData.location || 'Not specified'}</p>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Location</h3>
+              <p className="text-gray-900 dark:text-white">{job.parsedData.location || 'Not specified'}</p>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Compensation</h3>
-              <p className="text-gray-900">{formatCompensation()}</p>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Compensation</h3>
+              <p className="text-gray-900 dark:text-white">{formatCompensation()}</p>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Applied</h3>
-              <p className="text-gray-900">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Applied</h3>
+              <p className="text-gray-900 dark:text-white">
                 {format(new Date(job.applicationDate), 'PPP')}
-                <span className="text-gray-500 text-sm ml-2">
+                <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">
                   ({formatDistanceToNow(new Date(job.applicationDate), { addSuffix: true })})
                 </span>
               </p>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Job URL</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Job URL</h3>
               {job.url ? (
                 <a
                   href={job.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline text-sm"
+                  className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
                 >
                   View Original Posting →
                 </a>
               ) : (
-                <p className="text-gray-500 text-sm">Not available</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Not available</p>
               )}
             </div>
           </div>
@@ -149,18 +149,18 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
           {/* Description */}
           {job.parsedData.descriptionSummary && (
             <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Job Description Summary</h3>
-              <p className="text-gray-700 text-sm leading-relaxed">{job.parsedData.descriptionSummary}</p>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Job Description Summary</h3>
+              <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{job.parsedData.descriptionSummary}</p>
             </div>
           )}
 
           {/* Benefits */}
           {job.parsedData.benefits.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Benefits</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Benefits</h3>
               <div className="flex flex-wrap gap-2">
                 {job.parsedData.benefits.map((benefit, index) => (
-                  <span key={index} className="px-2 py-1 bg-green-50 text-green-700 rounded text-sm">
+                  <span key={index} className="px-2 py-1 bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 rounded text-sm">
                     {benefit}
                   </span>
                 ))}
@@ -171,30 +171,30 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
           {/* User Notes */}
           {job.userNotes && (
             <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Your Notes</h3>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-gray-700 text-sm whitespace-pre-wrap">{job.userNotes}</p>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Your Notes</h3>
+              <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+                <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">{job.userNotes}</p>
               </div>
             </div>
           )}
 
           {/* Status Updates Timeline */}
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-3">Timeline</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Timeline</h3>
             <div className="space-y-4">
               {/* Initial Application */}
               <div className="flex gap-3">
                 <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  {job.statusUpdates.length > 0 && <div className="w-0.5 h-full bg-gray-200 mt-2"></div>}
+                  {job.statusUpdates.length > 0 && <div className="w-0.5 h-full bg-gray-200 dark:bg-gray-700 mt-2"></div>}
                 </div>
                 <div className="flex-1 pb-4">
-                  <p className="font-medium text-gray-900">Application Submitted</p>
-                  <p className="text-sm text-gray-500">{format(new Date(job.applicationDate), 'PPP')}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">Application Submitted</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{format(new Date(job.applicationDate), 'PPP')}</p>
                 </div>
               </div>
 
@@ -203,29 +203,29 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
                 <div key={index} className="flex gap-3">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full ${
-                      update.heardBack ? 'bg-green-100' : 'bg-gray-100'
+                      update.heardBack ? 'bg-green-100 dark:bg-green-900' : 'bg-gray-100 dark:bg-gray-700'
                     } flex items-center justify-center`}>
                       {update.heardBack ? (
-                        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 text-green-600 dark:text-green-300" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                         </svg>
                       ) : (
-                        <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                         </svg>
                       )}
                     </div>
-                    {index < job.statusUpdates.length - 1 && <div className="w-0.5 h-full bg-gray-200 mt-2"></div>}
+                    {index < job.statusUpdates.length - 1 && <div className="w-0.5 h-full bg-gray-200 dark:bg-gray-700 mt-2"></div>}
                   </div>
                   <div className="flex-1 pb-4">
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {update.heardBack ? 'Heard Back' : 'Update'}
                       {update.nextStep && ` - ${update.nextStep}`}
                     </p>
                     {update.notes && (
-                      <p className="text-sm text-gray-700 mt-1">{update.notes}</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{update.notes}</p>
                     )}
-                    <p className="text-sm text-gray-500 mt-1">{format(new Date(update.date), 'PPP')}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{format(new Date(update.date), 'PPP')}</p>
                   </div>
                 </div>
               ))}
@@ -234,8 +234,8 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
 
           {/* Add Status Update Form */}
           {showStatusUpdate ? (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 mb-4">Add Status Update</h3>
+            <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-4">Add Status Update</h3>
 
               {/* Heard Back Toggle */}
               <div className="mb-4">
@@ -244,22 +244,22 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
                     type="checkbox"
                     checked={heardBack}
                     onChange={(e) => setHeardBack(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Have you heard back?</span>
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Have you heard back?</span>
                 </label>
               </div>
 
               {/* Next Step */}
               {heardBack && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     What's the next step?
                   </label>
                   <select
                     value={nextStep}
                     onChange={(e) => setNextStep(e.target.value as ApplicationStatus)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select status...</option>
                     {Object.values(ApplicationStatus).map(status => (
@@ -271,7 +271,7 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
 
               {/* Notes */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Notes (optional)
                 </label>
                 <textarea
@@ -279,7 +279,7 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
                   onChange={(e) => setUpdateNotes(e.target.value)}
                   rows={3}
                   placeholder="Any updates or feelings to note..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -299,7 +299,7 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
                     setNextStep('');
                     setUpdateNotes('');
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                 >
                   Cancel
                 </button>
@@ -308,7 +308,7 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
           ) : (
             <button
               onClick={() => setShowStatusUpdate(true)}
-              className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-100 transition flex items-center justify-center gap-2"
+              className="w-full bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200 px-4 py-3 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -319,7 +319,7 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
         </div>
 
         {/* Footer Actions */}
-        <div className="border-t border-gray-200 p-6 flex gap-3">
+        <div className="border-t border-gray-200 dark:border-gray-700 p-6 flex gap-3">
           <button
             onClick={() => onGenerateEmail(job)}
             className="flex-1 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
@@ -331,7 +331,7 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
           </button>
           <button
             onClick={onClose}
-            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
             Close
           </button>

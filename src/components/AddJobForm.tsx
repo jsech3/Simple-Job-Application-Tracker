@@ -98,6 +98,9 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
       return;
     }
 
+    setIsLoading(true);
+    setError(null);
+
     try {
       const application: JobApplication = {
         id: uuidv4(),
@@ -112,10 +115,17 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
         updatedAt: new Date().toISOString(),
       };
 
-      StorageService.saveApplication(application);
-      onSuccess();
+      const success = StorageService.saveApplication(application);
+
+      if (success) {
+        onSuccess();
+      } else {
+        setError('Failed to save application');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save application');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -282,11 +292,11 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
 
         {/* Work Environment */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Work Environment</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Environment</label>
           <select
             value={formData.workEnvironment}
             onChange={(e) => updateField('workEnvironment', e.target.value as WorkEnvironment)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             {Object.values(WorkEnvironment).map(env => (
               <option key={env} value={env}>{env}</option>
@@ -296,11 +306,11 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
 
         {/* Work Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Work Type</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Type</label>
           <select
             value={formData.workType}
             onChange={(e) => updateField('workType', e.target.value as WorkType)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             {Object.values(WorkType).map(type => (
               <option key={type} value={type}>{type}</option>
@@ -310,44 +320,44 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
       </div>
 
       {/* Compensation */}
-      <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Compensation (Optional)</h3>
+      <div className="mb-6 p-4 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Compensation (Optional)</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Min</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Min</label>
             <input
               type="number"
               value={formData.compensation?.min || ''}
               onChange={(e) => updateCompensation('min', e.target.value ? Number(e.target.value) : undefined as any)}
               placeholder="50000"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Max</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max</label>
             <input
               type="number"
               value={formData.compensation?.max || ''}
               onChange={(e) => updateCompensation('max', e.target.value ? Number(e.target.value) : undefined as any)}
               placeholder="75000"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Currency</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Currency</label>
             <input
               type="text"
               value={formData.compensation?.currency || 'USD'}
               onChange={(e) => updateCompensation('currency', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Period</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Period</label>
             <select
               value={formData.compensation?.period || 'annual'}
               onChange={(e) => updateCompensation('period', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm"
             >
               <option value="annual">Annual</option>
               <option value="hourly">Hourly</option>
@@ -358,19 +368,19 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
 
       {/* Job Description Summary */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Job Description Summary</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Description Summary</label>
         <textarea
           value={formData.descriptionSummary}
           onChange={(e) => updateField('descriptionSummary', e.target.value)}
           rows={4}
           placeholder="Brief summary of the role and requirements..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* User Notes */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Your Notes (Optional)
         </label>
         <textarea
@@ -378,9 +388,9 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
           onChange={(e) => setUserNotes(e.target.value)}
           rows={3}
           placeholder="Any notes about this role? (e.g., key talking points, who you spoke with, why you're excited)"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
           These notes will be used to personalize follow-up emails
         </p>
       </div>
@@ -392,9 +402,9 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
             type="checkbox"
             checked={hasApplied}
             onChange={(e) => setHasApplied(e.target.checked)}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
           />
-          <span className="ml-2 text-sm text-gray-700">I have already applied to this job</span>
+          <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">I have already applied to this job</span>
         </label>
       </div>
 
@@ -402,9 +412,10 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
       <div className="flex gap-3">
         <button
           onClick={handleSave}
-          className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+          disabled={isLoading}
+          className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
         >
-          Save Application
+          {isLoading ? 'Saving...' : 'Save Application'}
         </button>
         <button
           onClick={onCancel}

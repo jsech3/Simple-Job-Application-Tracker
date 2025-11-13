@@ -41,10 +41,12 @@ export class StorageService {
     try {
       const applications = this.getAllApplications();
 
-      // Check for duplicate URL
-      const duplicate = applications.find(app => app.url === application.url);
-      if (duplicate) {
-        throw new Error(`You already applied to this job on ${new Date(duplicate.applicationDate).toLocaleDateString()}`);
+      // Check for duplicate URL (only if URL is provided)
+      if (application.url && application.url.trim() !== '') {
+        const duplicate = applications.find(app => app.url === application.url);
+        if (duplicate) {
+          throw new Error(`You already applied to this job on ${new Date(duplicate.applicationDate).toLocaleDateString()}`);
+        }
       }
 
       applications.push(application);
@@ -323,6 +325,95 @@ export class StorageService {
     } catch (error) {
       console.error('Error clearing data:', error);
       return false;
+    }
+  }
+
+  // Export to CSV
+  static exportToCSV(): void {
+    try {
+      console.log('Starting CSV export...');
+      const applications = this.getAllApplications();
+      console.log(`Found ${applications.length} applications to export`);
+
+      if (applications.length === 0) {
+        alert('No job applications to export');
+        return;
+      }
+
+    // CSV Headers
+    const headers = [
+      'Application Date',
+      'Job Title',
+      'Company',
+      'Location',
+      'Platform',
+      'Work Environment',
+      'Work Type',
+      'Current Status',
+      'Min Salary',
+      'Max Salary',
+      'Currency',
+      'Salary Period',
+      'Job URL',
+      'Total Updates',
+      'User Notes',
+      'Benefits',
+      'Description Summary'
+    ];
+
+    // Convert applications to CSV rows
+    const rows = applications.map(app => {
+      const latestStatus = app.statusUpdates.length > 0 && app.statusUpdates[app.statusUpdates.length - 1].nextStep
+        ? app.statusUpdates[app.statusUpdates.length - 1].nextStep
+        : ApplicationStatus.Applied;
+
+      return [
+        new Date(app.applicationDate).toLocaleDateString(),
+        `"${(app.parsedData.title || '').replace(/"/g, '""')}"`,
+        `"${(app.parsedData.company || '').replace(/"/g, '""')}"`,
+        `"${(app.parsedData.location || '').replace(/"/g, '""')}"`,
+        app.parsedData.platform || '',
+        app.parsedData.workEnvironment || '',
+        app.parsedData.workType || '',
+        latestStatus,
+        app.parsedData.compensation?.min || '',
+        app.parsedData.compensation?.max || '',
+        app.parsedData.compensation?.currency || '',
+        app.parsedData.compensation?.period || '',
+        app.url || '',
+        app.statusUpdates.length,
+        `"${(app.userNotes || '').replace(/"/g, '""')}"`,
+        `"${(app.parsedData.benefits || []).join(', ').replace(/"/g, '""')}"`,
+        `"${(app.parsedData.descriptionSummary || '').replace(/"/g, '""')}"`
+      ];
+    });
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+      // Create blob and download
+      console.log('Creating CSV file...');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+
+      const filename = `job-applications-${new Date().toISOString().split('T')[0]}.csv`;
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      console.log(`Successfully exported ${applications.length} applications to ${filename}`);
+      alert(`Successfully exported ${applications.length} job applications!`);
+    } catch (error) {
+      console.error('Error exporting to CSV:', error);
+      alert(`Failed to export CSV: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }

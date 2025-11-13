@@ -126,7 +126,7 @@ Important:
       const client = this.getClient();
 
       const message = await client.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-7-sonnet-20250219',
         max_tokens: 2000,
         messages: [
           {
@@ -218,7 +218,7 @@ Return ONLY valid JSON, no additional text.`;
       const client = this.getClient();
 
       const message = await client.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-7-sonnet-20250219',
         max_tokens: 1000,
         messages: [
           {

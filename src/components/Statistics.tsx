@@ -55,16 +55,16 @@ export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full my-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full my-8">
         {/* Header */}
-        <div className="border-b border-gray-200 p-6 flex justify-between items-center">
+        <div className="border-b border-gray-200 dark:border-gray-700 p-6 flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Application Statistics</h2>
-            <p className="text-gray-600 mt-1">Overview of your job search progress</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Application Statistics</h2>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">Overview of your job search progress</p>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -107,8 +107,8 @@ export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Applications Over Time */}
             {stats.applicationsOverTime.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Applications Over Time</h3>
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Applications Over Time</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={stats.applicationsOverTime}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -136,8 +136,8 @@ export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
 
             {/* Status Breakdown */}
             {statusData.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Breakdown</h3>
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Breakdown</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -162,8 +162,8 @@ export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
 
             {/* Platform Distribution */}
             {platformData.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Applications by Platform</h3>
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Applications by Platform</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={platformData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -182,8 +182,8 @@ export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
 
             {/* Work Environment */}
             {workEnvData.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Work Environment Preferences</h3>
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Work Environment Preferences</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -208,8 +208,8 @@ export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
 
             {/* Work Type */}
             {workTypeData.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Work Type Distribution</h3>
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Work Type Distribution</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={workTypeData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -228,8 +228,8 @@ export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
 
             {/* Compensation Ranges */}
             {stats.compensationRanges.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Compensation Ranges</h3>
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Compensation Ranges</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={stats.compensationRanges}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -245,10 +245,10 @@ export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-6">
+        <div className="border-t border-gray-200 dark:border-gray-700 p-6">
           <button
             onClick={onClose}
-            className="w-full bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition"
+            className="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
           >
             Close
           </button>
