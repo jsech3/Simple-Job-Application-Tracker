@@ -19,6 +19,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterWorkEnv, setFilterWorkEnv] = useState<string>('all');
+  const [filterTag, setFilterTag] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Get latest status for a job
@@ -53,6 +54,13 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
       filtered = filtered.filter(job => job.parsedData.workEnvironment === filterWorkEnv);
     }
 
+    // Apply tag filter
+    if (filterTag !== 'all') {
+      filtered = filtered.filter(job =>
+        job.parsedData.tags && job.parsedData.tags.includes(filterTag)
+      );
+    }
+
     // Sort
     filtered.sort((a, b) => {
       let comparison = 0;
@@ -76,7 +84,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
     });
 
     return filtered;
-  }, [jobs, sortField, sortOrder, filterStatus, filterWorkEnv, searchQuery]);
+  }, [jobs, sortField, sortOrder, filterStatus, filterWorkEnv, filterTag, searchQuery]);
 
   // Toggle sort
   const toggleSort = (field: SortField) => {
@@ -92,6 +100,17 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set(jobs.map(job => getLatestStatus(job)));
     return Array.from(statuses).sort();
+  }, [jobs]);
+
+  // Get unique tags from jobs
+  const uniqueTags = useMemo(() => {
+    const tags = new Set<string>();
+    jobs.forEach(job => {
+      if (job.parsedData.tags) {
+        job.parsedData.tags.forEach(tag => tags.add(tag));
+      }
+    });
+    return Array.from(tags).sort();
   }, [jobs]);
 
   return (
@@ -128,7 +147,7 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
 
       {/* Search and Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
           <div className="md:col-span-2 tour-search">
             <input
@@ -164,6 +183,20 @@ export const Dashboard = ({ jobs, onJobClick, onAddJob, onJobUpdate }: Dashboard
               <option value="all">All Environments</option>
               {Object.values(WorkEnvironment).map(env => (
                 <option key={env} value={env}>{env}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Tag Filter */}
+          <div>
+            <select
+              value={filterTag}
+              onChange={(e) => setFilterTag(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Tags</option>
+              {uniqueTags.map(tag => (
+                <option key={tag} value={tag}>#{tag}</option>
               ))}
             </select>
           </div>

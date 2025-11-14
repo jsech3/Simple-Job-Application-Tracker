@@ -53,6 +53,7 @@ export interface ParsedJobData {
   platform: JobPlatform;
   benefits: string[];
   descriptionSummary: string;
+  tags: string[]; // AI-generated tags for categorization
   confidence?: {
     title?: number;
     company?: number;

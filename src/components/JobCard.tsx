@@ -133,6 +133,20 @@ export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
         </span>
       </div>
 
+      {/* Tags */}
+      {job.parsedData.tags && job.parsedData.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {job.parsedData.tags.map((tag, index) => (
+            <span
+              key={index}
+              className="px-2 py-0.5 rounded-full text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Footer */}
       <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-700">
         <span>Applied {formatDistanceToNow(new Date(job.applicationDate), { addSuffix: true })}</span>

@@ -109,6 +109,7 @@ Please extract the following information and return it as a JSON object:
   "location": "city, state, country",
   "benefits": ["benefit1", "benefit2", ...],
   "descriptionSummary": "brief 200-word summary of job description and requirements",
+  "tags": ["tag1", "tag2", "tag3", ...],
   "confidence": {
     "title": 0-100,
     "company": 0-100,
@@ -121,7 +122,9 @@ Important:
 - If compensation is not clearly stated, set it to null
 - Be conservative with confidence scores
 - Return ONLY valid JSON, no additional text
-- For workEnvironment and workType, use exact strings from the options provided`;
+- For workEnvironment and workType, use exact strings from the options provided
+- For tags, generate 3-8 relevant tags based on the job (e.g., industry, technologies, skills, seniority level, etc.)
+  Examples: "JavaScript", "React", "Senior", "FinTech", "Healthcare", "Machine Learning", "Cloud", "Startup", "Enterprise"`;
 
       const client = this.getClient();
 
