@@ -35,6 +35,7 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
     platform: JobPlatform.Other,
     benefits: [],
     descriptionSummary: '',
+    tags: [],
   });
 
   const [hasApplied, setHasApplied] = useState(true);
@@ -376,6 +377,23 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
           placeholder="Brief summary of the role and requirements..."
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      {/* Tags */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Tags (Optional)
+        </label>
+        <input
+          type="text"
+          value={formData.tags.join(', ')}
+          onChange={(e) => updateField('tags', e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0))}
+          placeholder="e.g., React, Senior, FinTech, Remote..."
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          Add tags separated by commas to categorize this job (technologies, industry, skills, etc.)
+        </p>
       </div>
 
       {/* User Notes */}
