@@ -1,0 +1,22 @@
+BUILD_VALIDATION_CONFIRMATION_11.16.25
+====================================
+
+Verification Snapshot
+---------------------
+- Repo state: `git status -sb` reports `## main...origin/main`, confirming local HEAD equals `origin/main` and no unpushed work remains. Short log shows latest commit `b1d9560 Convert to cross-browser extension with auto-detection and side panel`.
+- Build verification: `npm run build:ext` (Vite multi-entry build) completes successfully and emits background/content scripts, side panel, and options bundles into `dist/`, matching the instructions in EXTENSION_README.md.
+- Manifest & assets: `public/manifest.json` includes Chrome + Firefox compatible metadata (service worker, side panel, options page, host permissions, Gecko ID) plus icon references to `public/icons/icon-*.png` that exist in the repo.
+- Content scripts & detection: `public/manifest.json` match patterns and `src/extension/content-script.ts` confirm on-page auto-detection, floating quick-add UI, job extraction, and messaging. CSS for the injected button lives in `public/content-script.css`.
+- Background/service worker: `src/extension/background.ts` handles extension action clicks, context menu flow, message handling, and job creation logic (with UUID IDs and Claude parsing) before persisting via `StorageService`.
+- Side panel UI: `sidepanel.html` and `src/extension/sidepanel.tsx` bootstrap the existing React App into the extension side panel after storage initialization.
+- Options page & storage migration: `options.html`, `src/extension/options.tsx`, and `src/extension/browser-polyfill.ts` provide the API-key configuration UI with cross-browser storage support. `src/services/storage.ts` now uses `chrome.storage` when in extension context, covering the chrome.storage migration claim.
+- Documentation & policy: `EXTENSION_README.md` documents building/loading the extension, and `PRIVACY.md` captures the extension privacy policy. Combined they cover the “privacy policy and extension documentation” requirement.
+
+Next Steps To Fully Button Things Up
+------------------------------------
+1. **Manual extension load & smoke test** – Run `npm run build:ext`, load the `dist/` folder in Chrome (`chrome://extensions`) and Firefox (`about:debugging#/runtime/this-firefox`), then confirm the side panel renders the dashboard and the extension icon opens it without errors.
+2. **API key configuration check** – Use the Options page to save/clear an Anthropic API key, reload the side panel, and ensure Claude-powered parsing uses the stored key without errors.
+3. **Content-script validation** – Visit supported job sites (LinkedIn, Indeed, ZipRecruiter, Glassdoor) to ensure the “Add to Job Tracker” button appears, extracts job details, and the success flow opens the side panel.
+4. **Context menu + background flow** – Right-click on a job posting, choose “Add to Job Tracker,” and confirm the background worker sends the tab message and persists a new application without duplication issues.
+5. **Data integrity + storage sync** – Verify applications persist across browser restarts and, if desired, across profiles synced via browser storage; export/import data via the existing CSV/JSON actions to confirm no regressions.
+6. **Publishing readiness** – Review Chrome/Firefox store requirements (icons, privacy disclosures, descriptions) against the repository assets and docs, then package the `dist/` folder according to each store’s submission checklist when ready.
