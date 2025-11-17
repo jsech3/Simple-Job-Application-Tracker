@@ -8,14 +8,29 @@ import {
   JobPlatform,
   JobApplication,
 } from '../types';
+import { storage } from '../extension/browser-polyfill';
 
-// Get API key from environment variable
-const getApiKey = (): string => {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error('VITE_ANTHROPIC_API_KEY environment variable is not set');
+const API_KEY_STORAGE_KEY = 'anthropic_api_key';
+const isExtension = typeof chrome !== 'undefined' && chrome.storage;
+
+// Get API key from chrome.storage or environment variable
+const getApiKey = async (): Promise<string> => {
+  if (isExtension) {
+    // In extension context, get from storage
+    const data = await storage.sync.get(API_KEY_STORAGE_KEY);
+    const apiKey = data[API_KEY_STORAGE_KEY];
+    if (!apiKey) {
+      throw new Error('API key not configured. Please set it in the extension options.');
+    }
+    return apiKey;
+  } else {
+    // In development, get from environment variable
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new Error('VITE_ANTHROPIC_API_KEY environment variable is not set');
+    }
+    return apiKey;
   }
-  return apiKey;
 };
 
 // Detect platform from URL
@@ -66,17 +81,13 @@ const fetchWebpageContent = async (url: string): Promise<string> => {
 };
 
 export class ClaudeService {
-  private static client: Anthropic | null = null;
-
-  // Initialize Claude client
-  private static getClient(): Anthropic {
-    if (!this.client) {
-      this.client = new Anthropic({
-        apiKey: getApiKey(),
-        dangerouslyAllowBrowser: true, // Note: For production, move this to a backend
-      });
-    }
-    return this.client;
+  // Initialize Claude client (removed caching since API key is async)
+  private static async getClient(): Promise<Anthropic> {
+    const apiKey = await getApiKey();
+    return new Anthropic({
+      apiKey,
+      dangerouslyAllowBrowser: true, // Safe in extension context
+    });
   }
 
   // Parse job posting from text content (NEW - bypasses CORS)
@@ -126,7 +137,7 @@ Important:
 - For tags, generate 3-8 relevant tags based on the job (e.g., industry, technologies, skills, seniority level, etc.)
   Examples: "JavaScript", "React", "Senior", "FinTech", "Healthcare", "Machine Learning", "Cloud", "Startup", "Enterprise"`;
 
-      const client = this.getClient();
+      const client = await this.getClient();
 
       const message = await client.messages.create({
         model: 'claude-3-7-sonnet-20250219',
@@ -218,7 +229,7 @@ Return the response as JSON:
 The email should be professional but personable. Use [Hiring Manager/Team] as the greeting placeholder.
 Return ONLY valid JSON, no additional text.`;
 
-      const client = this.getClient();
+      const client = await this.getClient();
 
       const message = await client.messages.create({
         model: 'claude-3-7-sonnet-20250219',

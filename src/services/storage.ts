@@ -1,45 +1,63 @@
 import { JobApplication, ApplicationStats, ApplicationStatus, JobPlatform, WorkEnvironment, WorkType } from '../types';
+import { storage } from '../extension/browser-polyfill';
 
 const STORAGE_KEY = 'job_applications';
 const VERSION_KEY = 'job_tracker_version';
 const CURRENT_VERSION = '1.0.0';
 
+// Check if we're in extension context
+const isExtension = typeof chrome !== 'undefined' && chrome.storage;
+
 export class StorageService {
   // Initialize storage (check version, migrate if needed)
-  static initialize(): void {
-    const version = localStorage.getItem(VERSION_KEY);
-    if (!version) {
-      localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
-    }
-
-    // Ensure storage exists
-    if (!localStorage.getItem(STORAGE_KEY)) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+  static async initialize(): Promise<void> {
+    if (isExtension) {
+      const data = await storage.local.get([VERSION_KEY, STORAGE_KEY]);
+      if (!data[VERSION_KEY]) {
+        await storage.local.set({ [VERSION_KEY]: CURRENT_VERSION });
+      }
+      if (!data[STORAGE_KEY]) {
+        await storage.local.set({ [STORAGE_KEY]: [] });
+      }
+    } else {
+      // Fallback to localStorage for development
+      const version = localStorage.getItem(VERSION_KEY);
+      if (!version) {
+        localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+      }
+      if (!localStorage.getItem(STORAGE_KEY)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+      }
     }
   }
 
   // Get all job applications
-  static getAllApplications(): JobApplication[] {
+  static async getAllApplications(): Promise<JobApplication[]> {
     try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (!data) return [];
-      return JSON.parse(data) as JobApplication[];
+      if (isExtension) {
+        const data = await storage.local.get(STORAGE_KEY);
+        return (data[STORAGE_KEY] as JobApplication[]) || [];
+      } else {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (!data) return [];
+        return JSON.parse(data) as JobApplication[];
+      }
     } catch (error) {
-      console.error('Error reading from localStorage:', error);
+      console.error('Error reading from storage:', error);
       return [];
     }
   }
 
   // Get a single application by ID
-  static getApplication(id: string): JobApplication | null {
-    const applications = this.getAllApplications();
+  static async getApplication(id: string): Promise<JobApplication | null> {
+    const applications = await this.getAllApplications();
     return applications.find(app => app.id === id) || null;
   }
 
   // Save a new application
-  static saveApplication(application: JobApplication): boolean {
+  static async saveApplication(application: JobApplication): Promise<boolean> {
     try {
-      const applications = this.getAllApplications();
+      const applications = await this.getAllApplications();
 
       // Check for duplicate URL (only if URL is provided)
       if (application.url && application.url.trim() !== '') {
@@ -50,7 +68,12 @@ export class StorageService {
       }
 
       applications.push(application);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+
+      if (isExtension) {
+        await storage.local.set({ [STORAGE_KEY]: applications });
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+      }
       return true;
     } catch (error) {
       console.error('Error saving application:', error);
@@ -59,9 +82,9 @@ export class StorageService {
   }
 
   // Update an existing application
-  static updateApplication(id: string, updates: Partial<JobApplication>): boolean {
+  static async updateApplication(id: string, updates: Partial<JobApplication>): Promise<boolean> {
     try {
-      const applications = this.getAllApplications();
+      const applications = await this.getAllApplications();
       const index = applications.findIndex(app => app.id === id);
 
       if (index === -1) {
@@ -74,7 +97,11 @@ export class StorageService {
         updatedAt: new Date().toISOString(),
       };
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+      if (isExtension) {
+        await storage.local.set({ [STORAGE_KEY]: applications });
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+      }
       return true;
     } catch (error) {
       console.error('Error updating application:', error);
@@ -83,11 +110,16 @@ export class StorageService {
   }
 
   // Delete an application
-  static deleteApplication(id: string): boolean {
+  static async deleteApplication(id: string): Promise<boolean> {
     try {
-      const applications = this.getAllApplications();
+      const applications = await this.getAllApplications();
       const filtered = applications.filter(app => app.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+
+      if (isExtension) {
+        await storage.local.set({ [STORAGE_KEY]: filtered });
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+      }
       return true;
     } catch (error) {
       console.error('Error deleting application:', error);
@@ -96,13 +128,13 @@ export class StorageService {
   }
 
   // Mark follow-up reminder as shown
-  static markFollowUpShown(id: string): boolean {
+  static async markFollowUpShown(id: string): Promise<boolean> {
     return this.updateApplication(id, { followUpReminderShown: true });
   }
 
   // Get applications that need follow-up
-  static getApplicationsNeedingFollowUp(): JobApplication[] {
-    const applications = this.getAllApplications();
+  static async getApplicationsNeedingFollowUp(): Promise<JobApplication[]> {
+    const applications = await this.getAllApplications();
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
@@ -121,14 +153,14 @@ export class StorageService {
   }
 
   // Export all data as JSON
-  static exportAsJSON(): string {
-    const applications = this.getAllApplications();
+  static async exportAsJSON(): Promise<string> {
+    const applications = await this.getAllApplications();
     return JSON.stringify(applications, null, 2);
   }
 
   // Export all data as CSV
-  static exportAsCSV(): string {
-    const applications = this.getAllApplications();
+  static async exportAsCSV(): Promise<string> {
+    const applications = await this.getAllApplications();
 
     if (applications.length === 0) {
       return 'No applications to export';
@@ -184,7 +216,7 @@ export class StorageService {
   }
 
   // Import data from JSON
-  static importFromJSON(jsonString: string): boolean {
+  static async importFromJSON(jsonString: string): Promise<boolean> {
     try {
       const applications = JSON.parse(jsonString) as JobApplication[];
 
@@ -194,13 +226,17 @@ export class StorageService {
       }
 
       // Merge with existing data (avoid duplicates)
-      const existing = this.getAllApplications();
+      const existing = await this.getAllApplications();
       const existingUrls = new Set(existing.map(app => app.url));
 
       const newApplications = applications.filter(app => !existingUrls.has(app.url));
       const merged = [...existing, ...newApplications];
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      if (isExtension) {
+        await storage.local.set({ [STORAGE_KEY]: merged });
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      }
       return true;
     } catch (error) {
       console.error('Error importing data:', error);
@@ -209,8 +245,8 @@ export class StorageService {
   }
 
   // Calculate statistics
-  static getStatistics(): ApplicationStats {
-    const applications = this.getAllApplications();
+  static async getStatistics(): Promise<ApplicationStats> {
+    const applications = await this.getAllApplications();
 
     // Initialize counters
     const byStatus: Record<ApplicationStatus, number> = {} as Record<ApplicationStatus, number>;
@@ -318,9 +354,13 @@ export class StorageService {
   }
 
   // Clear all data (use with caution!)
-  static clearAllData(): boolean {
+  static async clearAllData(): Promise<boolean> {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+      if (isExtension) {
+        await storage.local.set({ [STORAGE_KEY]: [] });
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+      }
       return true;
     } catch (error) {
       console.error('Error clearing data:', error);
@@ -329,10 +369,10 @@ export class StorageService {
   }
 
   // Export to CSV
-  static exportToCSV(): void {
+  static async exportToCSV(): Promise<void> {
     try {
       console.log('Starting CSV export...');
-      const applications = this.getAllApplications();
+      const applications = await this.getAllApplications();
       console.log(`Found ${applications.length} applications to export`);
 
       if (applications.length === 0) {
@@ -418,5 +458,4 @@ export class StorageService {
   }
 }
 
-// Initialize on load
-StorageService.initialize();
+// Note: Initialize must be called explicitly in app entry points since it's now async

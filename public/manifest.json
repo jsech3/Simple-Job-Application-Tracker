@@ -1,0 +1,77 @@
+{
+  "manifest_version": 3,
+  "name": "Job Application Tracker",
+  "version": "1.0.0",
+  "description": "Zero-friction job application tracker with AI-powered parsing and intelligent tracking",
+  "author": "Jack Sechler",
+
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+
+  "action": {
+    "default_title": "Open Job Tracker"
+  },
+
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+
+  "options_page": "options.html",
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.linkedin.com/jobs/*",
+        "*://*.indeed.com/viewjob*",
+        "*://*.indeed.com/rc/clk*",
+        "*://*.ziprecruiter.com/c/*",
+        "*://*.glassdoor.com/job-listing/*",
+        "*://*.glassdoor.com/partner/jobListing*"
+      ],
+      "js": ["content-script.js"],
+      "css": ["content-script.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "activeTab",
+    "contextMenus",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "*://*.linkedin.com/*",
+    "*://*.indeed.com/*",
+    "*://*.ziprecruiter.com/*",
+    "*://*.glassdoor.com/*"
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*.png"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "job-tracker@jacksechler.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}
