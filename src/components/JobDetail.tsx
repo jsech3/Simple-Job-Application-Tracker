@@ -48,7 +48,7 @@ export const JobDetail = ({ job, onClose, onUpdate, onGenerateEmail }: JobDetail
 
     const updatedStatusUpdates = [...job.statusUpdates, newUpdate];
 
-    const success = StorageService.updateApplication(job.id, {
+    const success = await StorageService.updateApplication(job.id, {
       statusUpdates: updatedStatusUpdates,
     });
 

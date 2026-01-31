@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { JobApplication, ApplicationStatus, WorkEnvironment, WorkType } from '../types';
+import { JobApplication, ApplicationStatus, WorkEnvironment, WorkType, JobPlatform } from '../types';
 
 const DEMO_COMPANIES = [
   'Google', 'Meta', 'Amazon', 'Apple', 'Microsoft', 'Netflix', 'Tesla',
@@ -82,24 +82,24 @@ export function generateDemoJob(index: number = 0): JobApplication {
   // Random status
   const possibleStatuses = [
     ApplicationStatus.Applied,
-    ApplicationStatus.PhoneScreen,
-    ApplicationStatus.Interview,
-    ApplicationStatus.TechnicalAssessment,
-    ApplicationStatus.OnSite,
-    ApplicationStatus.Offer,
+    ApplicationStatus.PhoneScreenScheduled,
+    ApplicationStatus.TechnicalInterview,
+    ApplicationStatus.PhoneScreenCompleted,
+    ApplicationStatus.FinalInterview,
+    ApplicationStatus.OfferReceived,
     ApplicationStatus.Rejected,
   ];
   const currentStatus = randomItem(possibleStatuses);
 
   // Generate status updates based on current status
-  const statusUpdates = [];
+  const statusUpdates: JobApplication['statusUpdates'] = [];
   const statusOrder = [
     ApplicationStatus.Applied,
-    ApplicationStatus.PhoneScreen,
-    ApplicationStatus.Interview,
-    ApplicationStatus.TechnicalAssessment,
-    ApplicationStatus.OnSite,
-    ApplicationStatus.Offer,
+    ApplicationStatus.PhoneScreenScheduled,
+    ApplicationStatus.TechnicalInterview,
+    ApplicationStatus.PhoneScreenCompleted,
+    ApplicationStatus.FinalInterview,
+    ApplicationStatus.OfferReceived,
   ];
 
   const currentStatusIndex = statusOrder.indexOf(currentStatus);
@@ -108,22 +108,33 @@ export function generateDemoJob(index: number = 0): JobApplication {
       const updateDate = new Date(applicationDate.getTime() + i * 7 * 24 * 60 * 60 * 1000);
       statusUpdates.push({
         date: updateDate.toISOString(),
-        status: randomItem(DEMO_STATUS_UPDATES),
+        heardBack: i > 0,
         nextStep: statusOrder[i],
+        notes: randomItem(DEMO_STATUS_UPDATES),
       });
     }
   } else if (currentStatus === ApplicationStatus.Rejected) {
     statusUpdates.push({
       date: new Date(applicationDate.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-      status: 'Received rejection email',
+      heardBack: true,
       nextStep: ApplicationStatus.Rejected,
+      notes: 'Received rejection email',
     });
   }
+
+  // Map demo platform strings to JobPlatform enum
+  const platformMap: Record<string, JobPlatform> = {
+    'LinkedIn': JobPlatform.LinkedIn,
+    'Indeed': JobPlatform.Indeed,
+    'Company Website': JobPlatform.CompanyWebsite,
+    'Glassdoor': JobPlatform.Glassdoor,
+    'ZipRecruiter': JobPlatform.ZipRecruiter,
+  };
+  const jobPlatform = platformMap[platform] || JobPlatform.Other;
 
   const job: JobApplication = {
     id: uuidv4(),
     url: `https://www.${company.toLowerCase().replace(/\s/g, '')}.com/careers/${index}`,
-    applicationDate: applicationDate.toISOString(),
     parsedData: {
       title,
       company,
@@ -136,12 +147,18 @@ export function generateDemoJob(index: number = 0): JobApplication {
         currency: 'USD',
         period: 'annual',
       },
-      platform,
-      description: `Exciting opportunity to join ${company} as a ${title}. Work with cutting-edge technology and talented engineers to build products used by millions.`,
+      platform: jobPlatform,
+      benefits: [],
+      descriptionSummary: `Exciting opportunity to join ${company} as a ${title}. Work with cutting-edge technology and talented engineers to build products used by millions.`,
+      tags: [],
     },
-    notes: Math.random() > 0.5 ? randomItem(DEMO_NOTES) : undefined,
+    userNotes: Math.random() > 0.5 ? randomItem(DEMO_NOTES) : '',
+    hasApplied: true,
+    applicationDate: applicationDate.toISOString(),
     statusUpdates,
-    followUpShown: false,
+    followUpReminderShown: false,
+    createdAt: applicationDate.toISOString(),
+    updatedAt: applicationDate.toISOString(),
   };
 
   return job;
@@ -171,11 +188,12 @@ export function generateFollowUpDemoJob(): JobApplication {
   // Clear status updates except initial application
   job.statusUpdates = [{
     date: oldDate.toISOString(),
-    status: 'Applied through company portal',
+    heardBack: false,
     nextStep: ApplicationStatus.Applied,
+    notes: 'Applied through company portal',
   }];
 
-  job.followUpShown = false;
+  job.followUpReminderShown = false;
 
   return job;
 }

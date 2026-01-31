@@ -116,7 +116,7 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
         updatedAt: new Date().toISOString(),
       };
 
-      const success = StorageService.saveApplication(application);
+      const success = await StorageService.saveApplication(application);
 
       if (success) {
         onSuccess();

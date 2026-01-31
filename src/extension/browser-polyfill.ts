@@ -44,6 +44,9 @@ interface BrowserAPI {
   };
 }
 
+// Declare Firefox browser global
+declare const browser: any;
+
 // Detect browser and wrap APIs
 const getBrowserAPI = (): BrowserAPI => {
   // Firefox uses 'browser' namespace (promises-based)
@@ -57,13 +60,13 @@ const getBrowserAPI = (): BrowserAPI => {
     return {
       storage: {
         local: {
-          get: (keys) => new Promise((resolve) => chrome.storage.local.get(keys, resolve)),
+          get: (keys) => new Promise((resolve) => chrome.storage.local.get(keys as any, resolve)),
           set: (items) => new Promise((resolve) => chrome.storage.local.set(items, resolve)),
           remove: (keys) => new Promise((resolve) => chrome.storage.local.remove(keys, resolve)),
           clear: () => new Promise((resolve) => chrome.storage.local.clear(resolve)),
         },
         sync: {
-          get: (keys) => new Promise((resolve) => chrome.storage.sync.get(keys, resolve)),
+          get: (keys) => new Promise((resolve) => chrome.storage.sync.get(keys as any, resolve)),
           set: (items) => new Promise((resolve) => chrome.storage.sync.set(items, resolve)),
           remove: (keys) => new Promise((resolve) => chrome.storage.sync.remove(keys, resolve)),
           clear: () => new Promise((resolve) => chrome.storage.sync.clear(resolve)),
@@ -85,7 +88,7 @@ const getBrowserAPI = (): BrowserAPI => {
         onClicked: chrome.contextMenus.onClicked,
       } : undefined,
       sidePanel: chrome.sidePanel ? {
-        open: (options) => chrome.sidePanel.open(options),
+        open: (options) => chrome.sidePanel.open(options as any),
       } : undefined,
       scripting: chrome.scripting ? {
         executeScript: (injection) => chrome.scripting.executeScript(injection),

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   PieChart,
   Pie,
@@ -14,7 +14,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { JobApplication } from '../types';
+import { JobApplication, ApplicationStats } from '../types';
 import { StorageService } from '../services/storage';
 
 interface StatisticsProps {
@@ -24,8 +24,24 @@ interface StatisticsProps {
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
 
+const emptyStats: ApplicationStats = {
+  total: 0,
+  byStatus: {} as ApplicationStats['byStatus'],
+  byPlatform: {} as ApplicationStats['byPlatform'],
+  byWorkEnvironment: {} as ApplicationStats['byWorkEnvironment'],
+  byWorkType: {} as ApplicationStats['byWorkType'],
+  responseRate: 0,
+  averageResponseTime: 0,
+  applicationsOverTime: [],
+  compensationRanges: [],
+};
+
 export const Statistics = ({ jobs, onClose }: StatisticsProps) => {
-  const stats = useMemo(() => StorageService.getStatistics(), [jobs]);
+  const [stats, setStats] = useState<ApplicationStats>(emptyStats);
+
+  useEffect(() => {
+    StorageService.getStatistics().then(setStats);
+  }, [jobs]);
 
   // Prepare data for pie charts
   const statusData = Object.entries(stats.byStatus).map(([name, value]) => ({

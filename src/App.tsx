@@ -35,13 +35,13 @@ function App() {
     loadReminders();
   }, []);
 
-  const loadJobs = () => {
-    const loadedJobs = StorageService.getAllApplications();
+  const loadJobs = async () => {
+    const loadedJobs = await StorageService.getAllApplications();
     setJobs(loadedJobs);
   };
 
-  const loadReminders = () => {
-    const needingFollowUp = StorageService.getApplicationsNeedingFollowUp();
+  const loadReminders = async () => {
+    const needingFollowUp = await StorageService.getApplicationsNeedingFollowUp();
     setReminders(needingFollowUp);
   };
 
@@ -56,17 +56,17 @@ function App() {
     setCurrentView('detail');
   };
 
-  const handleJobUpdate = () => {
+  const handleJobUpdate = async () => {
     loadJobs();
     loadReminders();
     if (selectedJob) {
-      const updated = StorageService.getApplication(selectedJob.id);
+      const updated = await StorageService.getApplication(selectedJob.id);
       setSelectedJob(updated);
     }
   };
 
-  const handleDismissReminder = (jobId: string) => {
-    StorageService.markFollowUpShown(jobId);
+  const handleDismissReminder = async (jobId: string) => {
+    await StorageService.markFollowUpShown(jobId);
     loadReminders();
   };
 
@@ -74,8 +74,8 @@ function App() {
     setEmailGeneratorJob(job);
   };
 
-  const handleExportJSON = () => {
-    const json = StorageService.exportAsJSON();
+  const handleExportJSON = async () => {
+    const json = await StorageService.exportAsJSON();
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -87,8 +87,8 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleExportCSV = () => {
-    const csv = StorageService.exportAsCSV();
+  const handleExportCSV = async () => {
+    const csv = await StorageService.exportAsCSV();
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

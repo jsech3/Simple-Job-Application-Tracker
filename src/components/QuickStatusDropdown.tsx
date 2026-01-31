@@ -1,4 +1,4 @@
-import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
+import { Menu } from '@headlessui/react';
 import { ApplicationStatus } from '../types';
 import { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';

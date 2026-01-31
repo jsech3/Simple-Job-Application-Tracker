@@ -31,8 +31,6 @@ interface TestSuite {
 }
 
 class TestRunner {
-  private results: TestSuite[] = [];
-
   // Generate test job data
   private generateTestJob(overrides?: Partial<JobApplication>): JobApplication {
     const id = uuidv4();
@@ -54,6 +52,7 @@ class TestRunner {
         platform: JobPlatform.LinkedIn,
         benefits: ['Health Insurance', '401k', 'Unlimited PTO'],
         descriptionSummary: 'Looking for a senior engineer to join our team...',
+        tags: [],
       },
       userNotes: 'Excited about this role!',
       hasApplied: true,
@@ -77,12 +76,12 @@ class TestRunner {
     };
 
     // Clear storage before tests
-    StorageService.clearAllData();
+    await StorageService.clearAllData();
 
     // Test 1: Save application
     try {
       const testJob = this.generateTestJob();
-      const saved = StorageService.saveApplication(testJob);
+      const saved = await StorageService.saveApplication(testJob);
 
       if (saved) {
         suite.results.push({
@@ -105,7 +104,7 @@ class TestRunner {
 
     // Test 2: Get all applications
     try {
-      const apps = StorageService.getAllApplications();
+      const apps = await StorageService.getAllApplications();
 
       if (apps.length === 1) {
         suite.results.push({
@@ -128,8 +127,8 @@ class TestRunner {
 
     // Test 3: Get single application
     try {
-      const apps = StorageService.getAllApplications();
-      const app = StorageService.getApplication(apps[0].id);
+      const apps = await StorageService.getAllApplications();
+      const app = await StorageService.getApplication(apps[0].id);
 
       if (app && app.id === apps[0].id) {
         suite.results.push({
@@ -153,12 +152,12 @@ class TestRunner {
     // Test 4: Duplicate URL detection
     try {
       const testJob = this.generateTestJob();
-      StorageService.saveApplication(testJob);
+      await StorageService.saveApplication(testJob);
 
       // Try to save duplicate
       try {
         const duplicate = this.generateTestJob({ url: testJob.url });
-        StorageService.saveApplication(duplicate);
+        await StorageService.saveApplication(duplicate);
 
         throw new Error('Duplicate was saved (should have been rejected)');
       } catch (duplicateError) {
@@ -184,13 +183,13 @@ class TestRunner {
 
     // Test 5: Update application
     try {
-      const apps = StorageService.getAllApplications();
-      const updated = StorageService.updateApplication(apps[0].id, {
+      const apps = await StorageService.getAllApplications();
+      const updated = await StorageService.updateApplication(apps[0].id, {
         userNotes: 'Updated notes',
       });
 
       if (updated) {
-        const app = StorageService.getApplication(apps[0].id);
+        const app = await StorageService.getApplication(apps[0].id);
         if (app && app.userNotes === 'Updated notes') {
           suite.results.push({
             name: 'Update application',
@@ -215,11 +214,11 @@ class TestRunner {
 
     // Test 6: Delete application
     try {
-      const apps = StorageService.getAllApplications();
-      const deleted = StorageService.deleteApplication(apps[0].id);
+      const apps = await StorageService.getAllApplications();
+      const deleted = await StorageService.deleteApplication(apps[0].id);
 
       if (deleted) {
-        const remaining = StorageService.getAllApplications();
+        const remaining = await StorageService.getAllApplications();
         if (remaining.length === apps.length - 1) {
           suite.results.push({
             name: 'Delete application',
@@ -253,9 +252,9 @@ class TestRunner {
         followUpReminderShown: false,
       });
 
-      StorageService.saveApplication(oldJob);
+      await StorageService.saveApplication(oldJob);
 
-      const needingFollowUp = StorageService.getApplicationsNeedingFollowUp();
+      const needingFollowUp = await StorageService.getApplicationsNeedingFollowUp();
 
       if (needingFollowUp.length === 1) {
         suite.results.push({
@@ -278,7 +277,7 @@ class TestRunner {
 
     // Test 8: Export to JSON
     try {
-      const json = StorageService.exportAsJSON();
+      const json = await StorageService.exportAsJSON();
       const parsed = JSON.parse(json);
 
       if (Array.isArray(parsed)) {
@@ -302,7 +301,7 @@ class TestRunner {
 
     // Test 9: Export to CSV
     try {
-      const csv = StorageService.exportAsCSV();
+      const csv = await StorageService.exportAsCSV();
 
       if (csv.includes('Date Applied') && csv.includes('Company')) {
         suite.results.push({
@@ -325,7 +324,7 @@ class TestRunner {
 
     // Test 10: Statistics calculation
     try {
-      const stats = StorageService.getStatistics();
+      const stats = await StorageService.getStatistics();
 
       if (
         typeof stats.total === 'number' &&
@@ -364,7 +363,7 @@ class TestRunner {
       total: 0,
     };
 
-    StorageService.clearAllData();
+    await StorageService.clearAllData();
 
     // Test 1: Required fields validation
     try {
@@ -378,7 +377,7 @@ class TestRunner {
 
       // This should save but might cause issues in UI
       // We're just checking it doesn't crash
-      StorageService.saveApplication(invalidJob);
+      await StorageService.saveApplication(invalidJob);
 
       suite.results.push({
         name: 'Required fields validation',
@@ -425,7 +424,7 @@ class TestRunner {
 
     // Test 3: Status updates array
     try {
-      const apps = StorageService.getAllApplications();
+      const apps = await StorageService.getAllApplications();
       const app = apps[0];
 
       const newUpdate = {
@@ -435,11 +434,11 @@ class TestRunner {
         notes: 'Test update',
       };
 
-      StorageService.updateApplication(app.id, {
+      await StorageService.updateApplication(app.id, {
         statusUpdates: [...app.statusUpdates, newUpdate],
       });
 
-      const updated = StorageService.getApplication(app.id);
+      const updated = await StorageService.getApplication(app.id);
 
       if (updated && updated.statusUpdates.length === 1) {
         suite.results.push({
@@ -474,7 +473,7 @@ class TestRunner {
       total: 0,
     };
 
-    StorageService.clearAllData();
+    await StorageService.clearAllData();
 
     // Test 1: Large dataset (100 applications)
     try {
@@ -482,9 +481,11 @@ class TestRunner {
         this.generateTestJob({ parsedData: { ...this.generateTestJob().parsedData, title: `Job ${i}` } })
       );
 
-      jobs.forEach(job => StorageService.saveApplication(job));
+      for (const job of jobs) {
+        await StorageService.saveApplication(job);
+      }
 
-      const retrieved = StorageService.getAllApplications();
+      const retrieved = await StorageService.getAllApplications();
 
       if (retrieved.length === 100) {
         suite.results.push({
@@ -516,8 +517,8 @@ class TestRunner {
         },
       });
 
-      StorageService.saveApplication(specialJob);
-      const retrieved = StorageService.getApplication(specialJob.id);
+      await StorageService.saveApplication(specialJob);
+      const retrieved = await StorageService.getApplication(specialJob.id);
 
       if (retrieved && retrieved.parsedData.title.includes('"Exciting Opportunity!"')) {
         suite.results.push({
@@ -547,8 +548,8 @@ class TestRunner {
         },
       });
 
-      StorageService.saveApplication(noCompJob);
-      const retrieved = StorageService.getApplication(noCompJob.id);
+      await StorageService.saveApplication(noCompJob);
+      const retrieved = await StorageService.getApplication(noCompJob.id);
 
       if (retrieved && retrieved.parsedData.compensation === null) {
         suite.results.push({
@@ -586,20 +587,20 @@ class TestRunner {
     let totalTests = 0;
 
     suites.forEach(suite => {
-      console.log(`\n📦 ${suite.name}`);
+      console.log(`\n${suite.name}`);
       console.log(`   ${suite.passed} passed / ${suite.failed} failed / ${suite.total} total`);
       console.log('   ' + '─'.repeat(50));
 
       suite.results.forEach(result => {
-        const icon = result.passed ? '✅' : '❌';
+        const icon = result.passed ? 'PASS' : 'FAIL';
         console.log(`   ${icon} ${result.name}`);
 
         if (result.details) {
-          console.log(`      ℹ️  ${result.details}`);
+          console.log(`      Info: ${result.details}`);
         }
 
         if (result.error) {
-          console.log(`      ⚠️  Error: ${result.error}`);
+          console.log(`      Error: ${result.error}`);
         }
       });
 
@@ -609,15 +610,15 @@ class TestRunner {
     });
 
     console.log('\n' + '═'.repeat(60));
-    console.log(`\n📊 OVERALL RESULTS:`);
+    console.log(`\nOVERALL RESULTS:`);
     console.log(`   Total Tests: ${totalTests}`);
-    console.log(`   ✅ Passed: ${totalPassed} (${((totalPassed / totalTests) * 100).toFixed(1)}%)`);
-    console.log(`   ❌ Failed: ${totalFailed} (${((totalFailed / totalTests) * 100).toFixed(1)}%)`);
+    console.log(`   Passed: ${totalPassed} (${((totalPassed / totalTests) * 100).toFixed(1)}%)`);
+    console.log(`   Failed: ${totalFailed} (${((totalFailed / totalTests) * 100).toFixed(1)}%)`);
 
     if (totalFailed === 0) {
-      console.log('\n🎉 All tests passed!');
+      console.log('\nAll tests passed!');
     } else {
-      console.log(`\n⚠️  ${totalFailed} test(s) need attention`);
+      console.log(`\n${totalFailed} test(s) need attention`);
     }
 
     console.log('\n' + '═'.repeat(60));
@@ -625,7 +626,7 @@ class TestRunner {
 
   // Run all tests
   async runAll(): Promise<void> {
-    console.log('🧪 Running test suite...\n');
+    console.log('Running test suite...\n');
 
     const suites: TestSuite[] = [];
 
@@ -636,8 +637,8 @@ class TestRunner {
     this.printResults(suites);
 
     // Clean up
-    StorageService.clearAllData();
-    console.log('\n🧹 Test data cleaned up');
+    await StorageService.clearAllData();
+    console.log('\nTest data cleaned up');
   }
 }
 

@@ -11,23 +11,27 @@ interface JobCardProps {
 
 export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
   // Get latest status
-  const latestStatus = job.statusUpdates.length > 0 && job.statusUpdates[job.statusUpdates.length - 1].nextStep
-    ? job.statusUpdates[job.statusUpdates.length - 1].nextStep
+  const latestStatus: ApplicationStatus = job.statusUpdates.length > 0 && job.statusUpdates[job.statusUpdates.length - 1].nextStep
+    ? job.statusUpdates[job.statusUpdates.length - 1].nextStep!
     : ApplicationStatus.Applied;
 
   // Handle status change
-  const handleStatusChange = (newStatus: ApplicationStatus) => {
-    StorageService.addStatusUpdate(job.id, {
+  const handleStatusChange = async (newStatus: ApplicationStatus) => {
+    const newUpdate = {
       date: new Date().toISOString(),
-      status: `Status changed to ${newStatus}`,
+      heardBack: true,
       nextStep: newStatus,
+      notes: `Status changed to ${newStatus}`,
+    };
+    await StorageService.updateApplication(job.id, {
+      statusUpdates: [...job.statusUpdates, newUpdate],
     });
     onUpdate?.();
   };
 
   // Handle delete
-  const handleDelete = () => {
-    StorageService.deleteApplication(job.id);
+  const handleDelete = async () => {
+    await StorageService.deleteApplication(job.id);
     onUpdate?.();
   };
 
@@ -47,25 +51,6 @@ export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
     }
 
     return 'Not specified';
-  };
-
-  // Status badge color
-  const getStatusColor = () => {
-    switch (latestStatus) {
-      case ApplicationStatus.OfferReceived:
-        return 'bg-green-100 text-green-800 border-green-200';
-      case ApplicationStatus.Rejected:
-      case ApplicationStatus.Withdrawn:
-        return 'bg-red-100 text-red-800 border-red-200';
-      case ApplicationStatus.PhoneScreenScheduled:
-      case ApplicationStatus.TechnicalInterview:
-      case ApplicationStatus.FinalInterview:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case ApplicationStatus.PhoneScreenCompleted:
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
   };
 
   // Work environment badge color
