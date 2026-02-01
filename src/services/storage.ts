@@ -8,6 +8,20 @@ const CURRENT_VERSION = '1.0.0';
 // Check if we're in extension context
 const isExtension = typeof chrome !== 'undefined' && chrome.storage;
 
+// Helper to safely write to localStorage with quota handling
+const safeLocalStorageSet = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      throw new Error(
+        'Storage is full. Export your data (JSON or CSV) and clear old applications to free up space.'
+      );
+    }
+    throw e;
+  }
+};
+
 export class StorageService {
   // Initialize storage (check version, migrate if needed)
   static async initialize(): Promise<void> {
@@ -23,10 +37,10 @@ export class StorageService {
       // Fallback to localStorage for development
       const version = localStorage.getItem(VERSION_KEY);
       if (!version) {
-        localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+        safeLocalStorageSet(VERSION_KEY, CURRENT_VERSION);
       }
       if (!localStorage.getItem(STORAGE_KEY)) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+        safeLocalStorageSet(STORAGE_KEY, JSON.stringify([]));
       }
     }
   }
@@ -72,7 +86,7 @@ export class StorageService {
       if (isExtension) {
         await storage.local.set({ [STORAGE_KEY]: applications });
       } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+        safeLocalStorageSet(STORAGE_KEY, JSON.stringify(applications));
       }
       return true;
     } catch (error) {
@@ -100,7 +114,7 @@ export class StorageService {
       if (isExtension) {
         await storage.local.set({ [STORAGE_KEY]: applications });
       } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+        safeLocalStorageSet(STORAGE_KEY, JSON.stringify(applications));
       }
       return true;
     } catch (error) {
@@ -118,7 +132,7 @@ export class StorageService {
       if (isExtension) {
         await storage.local.set({ [STORAGE_KEY]: filtered });
       } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+        safeLocalStorageSet(STORAGE_KEY, JSON.stringify(filtered));
       }
       return true;
     } catch (error) {
@@ -235,7 +249,7 @@ export class StorageService {
       if (isExtension) {
         await storage.local.set({ [STORAGE_KEY]: merged });
       } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        safeLocalStorageSet(STORAGE_KEY, JSON.stringify(merged));
       }
       return true;
     } catch (error) {
@@ -359,7 +373,7 @@ export class StorageService {
       if (isExtension) {
         await storage.local.set({ [STORAGE_KEY]: [] });
       } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+        safeLocalStorageSet(STORAGE_KEY, JSON.stringify([]));
       }
       return true;
     } catch (error) {

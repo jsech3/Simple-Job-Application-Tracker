@@ -58,7 +58,7 @@ A zero-friction job application tracker with automatic parsing and intelligent t
 
 ### Prerequisites
 - Node.js 16+ and npm
-- An Anthropic API key (get one at [console.anthropic.com](https://console.anthropic.com/))
+- An Anthropic API key (get one at [console.anthropic.com](https://console.anthropic.com/)) — optional, only needed for AI parsing and email generation
 
 ### Installation
 
@@ -90,6 +90,20 @@ npm run dev
 
 6. Open your browser and navigate to the URL shown in the terminal (usually `http://localhost:5173`)
 
+> **Note:** The app works without an API key — you can add jobs manually. AI parsing and email generation require a valid Anthropic API key.
+
+### Loading the Chrome Extension
+
+1. Build the extension:
+```bash
+npm run build
+```
+
+2. Open Chrome and go to `chrome://extensions/`
+3. Enable **Developer mode** (toggle in the top right)
+4. Click **Load unpacked** and select the `dist/` folder
+5. The extension icon will appear in your toolbar
+
 ### Building for Production
 
 ```bash
@@ -103,6 +117,13 @@ The built files will be in the `dist` directory.
 ```bash
 npm run preview
 ```
+
+### Deploy to Vercel
+
+1. Push your code to a GitHub repository
+2. Go to [vercel.com](https://vercel.com) and import your repo
+3. Set the environment variable `VITE_ANTHROPIC_API_KEY` in Vercel's project settings
+4. Deploy — the included `vercel.json` handles SPA routing automatically
 
 ## Usage Guide
 

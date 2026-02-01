@@ -48,6 +48,15 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
       return;
     }
 
+    // Check if API key is configured
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      setError(
+        'AI parsing requires an Anthropic API key. Add VITE_ANTHROPIC_API_KEY to your .env file, or use Manual Entry instead.'
+      );
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setStep('parsing');
