@@ -1,12 +1,29 @@
-import { JobApplication, ApplicationStats, ApplicationStatus, JobPlatform, WorkEnvironment, WorkType } from '../types';
+import { JobApplication, ApplicationStats, ApplicationStatus, JobPlatform, WorkEnvironment, WorkType, UserProfile } from '../types';
 import { storage } from '../extension/browser-polyfill';
+import { isSupabaseConfigured, getSupabase } from './supabase';
+import { SupabaseStorageService } from './supabaseStorage';
 
 const STORAGE_KEY = 'job_applications';
+const USER_PROFILE_KEY = 'user_profile';
 const VERSION_KEY = 'job_tracker_version';
 const CURRENT_VERSION = '1.0.0';
 
 // Check if we're in extension context
 const isExtension = typeof chrome !== 'undefined' && chrome.storage;
+
+/**
+ * Returns true when the user is authenticated with Supabase.
+ * When true, CRUD methods delegate to SupabaseStorageService.
+ */
+const isAuthenticated = async (): Promise<boolean> => {
+  if (!isSupabaseConfigured) return false;
+  try {
+    const { data: { session } } = await getSupabase().auth.getSession();
+    return Boolean(session);
+  } catch {
+    return false;
+  }
+};
 
 // Helper to safely write to localStorage with quota handling
 const safeLocalStorageSet = (key: string, value: string): void => {
@@ -48,6 +65,7 @@ export class StorageService {
   // Get all job applications
   static async getAllApplications(): Promise<JobApplication[]> {
     try {
+      if (await isAuthenticated()) return SupabaseStorageService.getAllApplications();
       if (isExtension) {
         const data = await storage.local.get(STORAGE_KEY);
         return (data[STORAGE_KEY] as JobApplication[]) || [];
@@ -64,12 +82,14 @@ export class StorageService {
 
   // Get a single application by ID
   static async getApplication(id: string): Promise<JobApplication | null> {
+    if (await isAuthenticated()) return SupabaseStorageService.getApplication(id);
     const applications = await this.getAllApplications();
     return applications.find(app => app.id === id) || null;
   }
 
   // Save a new application
   static async saveApplication(application: JobApplication): Promise<boolean> {
+    if (await isAuthenticated()) return SupabaseStorageService.saveApplication(application);
     try {
       const applications = await this.getAllApplications();
 
@@ -97,6 +117,7 @@ export class StorageService {
 
   // Update an existing application
   static async updateApplication(id: string, updates: Partial<JobApplication>): Promise<boolean> {
+    if (await isAuthenticated()) return SupabaseStorageService.updateApplication(id, updates);
     try {
       const applications = await this.getAllApplications();
       const index = applications.findIndex(app => app.id === id);
@@ -125,6 +146,7 @@ export class StorageService {
 
   // Delete an application
   static async deleteApplication(id: string): Promise<boolean> {
+    if (await isAuthenticated()) return SupabaseStorageService.deleteApplication(id);
     try {
       const applications = await this.getAllApplications();
       const filtered = applications.filter(app => app.id !== id);
@@ -365,6 +387,48 @@ export class StorageService {
     });
 
     return rangeCounts.filter(rc => rc.count > 0);
+  }
+
+  /**
+   * Retrieve the saved user profile (skills, titles, locations, preferences).
+   * Returns `null` if no profile has been saved yet.
+   *
+   * Storage key: `user_profile`
+   */
+  static async getUserProfile(): Promise<UserProfile | null> {
+    try {
+      if (await isAuthenticated()) return SupabaseStorageService.getUserProfile();
+      if (isExtension) {
+        const data = await storage.local.get(USER_PROFILE_KEY);
+        return (data[USER_PROFILE_KEY] as UserProfile) || null;
+      } else {
+        const data = localStorage.getItem(USER_PROFILE_KEY);
+        if (!data) return null;
+        return JSON.parse(data) as UserProfile;
+      }
+    } catch (error) {
+      console.error('Error reading user profile:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Persist the user profile to storage.
+   * Used by the AI Suggestions tab so Claude can generate targeted queries.
+   */
+  static async saveUserProfile(profile: UserProfile): Promise<boolean> {
+    try {
+      if (await isAuthenticated()) return SupabaseStorageService.saveUserProfile(profile);
+      if (isExtension) {
+        await storage.local.set({ [USER_PROFILE_KEY]: profile });
+      } else {
+        safeLocalStorageSet(USER_PROFILE_KEY, JSON.stringify(profile));
+      }
+      return true;
+    } catch (error) {
+      console.error('Error saving user profile:', error);
+      return false;
+    }
   }
 
   // Clear all data (use with caution!)

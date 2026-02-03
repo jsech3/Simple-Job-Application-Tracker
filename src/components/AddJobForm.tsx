@@ -16,6 +16,9 @@ interface AddJobFormProps {
   onCancel: () => void;
 }
 
+const inputClass = "w-full px-3.5 py-2.5 text-[13px] border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-900 dark:text-zinc-100 rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 placeholder-zinc-400 dark:placeholder-zinc-600";
+const labelClass = "block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider";
+
 export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
   const [step, setStep] = useState<'input' | 'parsing' | 'review' | 'manual'>('input');
   const [jobText, setJobText] = useState('');
@@ -142,65 +145,58 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
   // Render job description input step
   if (step === 'input') {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add Job Application</h2>
+      <div className="glass-card rounded-xl p-6 max-w-2xl mx-auto">
+        <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-5">Add Application</h2>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Paste Job Description
-          </label>
+        <div className="mb-5">
+          <label className={labelClass}>Job Description</label>
           <textarea
             value={jobText}
             onChange={(e) => setJobText(e.target.value)}
-            placeholder="Paste the entire job posting here (Ctrl+A, Ctrl+C from the job page)...&#10;&#10;Example:&#10;Senior Software Engineer&#10;Acme Corp - San Francisco, CA&#10;$120k - $180k&#10;&#10;We're looking for an experienced engineer to join our team..."
-            rows={12}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+            placeholder="Paste the entire job posting here..."
+            rows={10}
+            className={`${inputClass} font-mono`}
             autoFocus
           />
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            💡 <strong>Tip:</strong> Copy the entire job posting from LinkedIn, Indeed, or any job site - AI will extract the details
+          <p className="mt-1.5 text-[12px] text-zinc-400 dark:text-zinc-600">
+            Copy from LinkedIn, Indeed, or any job site &mdash; AI extracts the details
           </p>
         </div>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Job URL (Optional)
-          </label>
+        <div className="mb-5">
+          <label className={labelClass}>Job URL <span className="text-zinc-400 dark:text-zinc-600 font-normal normal-case">(optional)</span></label>
           <input
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://www.linkedin.com/jobs/..."
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={inputClass}
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Helps identify the platform (LinkedIn, Indeed, etc.)
-          </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 text-[13px]">
             {error}
           </div>
         )}
 
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <button
             onClick={handleParse}
             disabled={isLoading || !jobText.trim()}
-            className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
+            className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-400 disabled:opacity-40 disabled:cursor-not-allowed transition text-[13px] font-medium"
           >
-            {isLoading ? 'Parsing with AI...' : '✨ Parse with AI'}
+            {isLoading ? 'Parsing...' : 'Parse with AI'}
           </button>
           <button
             onClick={() => setStep('manual')}
-            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            className="px-5 py-2.5 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition text-[13px] font-medium"
           >
-            Manual Entry
+            Manual
           </button>
           <button
             onClick={onCancel}
-            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            className="px-5 py-2.5 text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition text-[13px]"
           >
             Cancel
           </button>
@@ -212,163 +208,91 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
   // Render parsing step
   if (step === 'parsing') {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Parsing job posting with AI...</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Extracting title, company, salary, and more...</p>
-        </div>
+      <div className="glass-card rounded-xl p-10 max-w-2xl mx-auto text-center">
+        <div className="w-8 h-8 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <h3 className="text-[15px] font-medium text-zinc-900 dark:text-zinc-100">Parsing with AI...</h3>
+        <p className="text-[13px] text-zinc-500 dark:text-zinc-500 mt-1">Extracting title, company, salary & more</p>
       </div>
     );
   }
 
   // Render review/manual entry form
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-        {step === 'review' ? '✨ Review AI-Parsed Data' : 'Manual Entry'}
+    <div className="glass-card rounded-xl p-6 max-w-4xl mx-auto">
+      <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-5">
+        {step === 'review' ? 'Review Parsed Data' : 'Manual Entry'}
       </h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 text-[13px]">
           {error}
         </div>
       )}
 
       {step === 'review' && parsedData?.confidence && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p className="text-sm text-blue-800 dark:text-blue-300 font-medium mb-2">AI Confidence Scores:</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-blue-700 dark:text-blue-300">
+        <div className="mb-5 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20">
+          <p className="text-[12px] text-indigo-600 dark:text-indigo-400 font-medium mb-1.5 uppercase tracking-wider">AI Confidence</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[12px] text-indigo-700 dark:text-indigo-300">
             <div>Title: {parsedData.confidence.title}%</div>
             <div>Company: {parsedData.confidence.company}%</div>
-            <div>Work Environment: {parsedData.confidence.workEnvironment}%</div>
+            <div>Work Env: {parsedData.confidence.workEnvironment}%</div>
             <div>Work Type: {parsedData.confidence.workType}%</div>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Job Title */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Job Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => updateField('title', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-          />
+          <label className={labelClass}>Job Title <span className="text-red-400">*</span></label>
+          <input type="text" value={formData.title} onChange={(e) => updateField('title', e.target.value)} className={inputClass} />
         </div>
-
-        {/* Company */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Company <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.company}
-            onChange={(e) => updateField('company', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-          />
+          <label className={labelClass}>Company <span className="text-red-400">*</span></label>
+          <input type="text" value={formData.company} onChange={(e) => updateField('company', e.target.value)} className={inputClass} />
         </div>
-
-        {/* Location */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
-          <input
-            type="text"
-            value={formData.location}
-            onChange={(e) => updateField('location', e.target.value)}
-            placeholder="City, State, Country"
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-          />
+          <label className={labelClass}>Location</label>
+          <input type="text" value={formData.location} onChange={(e) => updateField('location', e.target.value)} placeholder="City, State" className={inputClass} />
         </div>
-
-        {/* Platform */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Platform</label>
-          <select
-            value={formData.platform}
-            onChange={(e) => updateField('platform', e.target.value as JobPlatform)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            {Object.values(JobPlatform).map(platform => (
-              <option key={platform} value={platform}>{platform}</option>
-            ))}
+          <label className={labelClass}>Platform</label>
+          <select value={formData.platform} onChange={(e) => updateField('platform', e.target.value as JobPlatform)} className={inputClass}>
+            {Object.values(JobPlatform).map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
-
-        {/* Work Environment */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Environment</label>
-          <select
-            value={formData.workEnvironment}
-            onChange={(e) => updateField('workEnvironment', e.target.value as WorkEnvironment)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            {Object.values(WorkEnvironment).map(env => (
-              <option key={env} value={env}>{env}</option>
-            ))}
+          <label className={labelClass}>Work Environment</label>
+          <select value={formData.workEnvironment} onChange={(e) => updateField('workEnvironment', e.target.value as WorkEnvironment)} className={inputClass}>
+            {Object.values(WorkEnvironment).map(e => <option key={e} value={e}>{e}</option>)}
           </select>
         </div>
-
-        {/* Work Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Type</label>
-          <select
-            value={formData.workType}
-            onChange={(e) => updateField('workType', e.target.value as WorkType)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            {Object.values(WorkType).map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
+          <label className={labelClass}>Work Type</label>
+          <select value={formData.workType} onChange={(e) => updateField('workType', e.target.value as WorkType)} className={inputClass}>
+            {Object.values(WorkType).map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
       </div>
 
       {/* Compensation */}
-      <div className="mb-6 p-4 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Compensation (Optional)</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="mb-5 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/30">
+        <p className={labelClass}>Compensation <span className="text-zinc-400 dark:text-zinc-600 font-normal normal-case">(optional)</span></p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
           <div>
-            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Min</label>
-            <input
-              type="number"
-              value={formData.compensation?.min || ''}
-              onChange={(e) => updateCompensation('min', e.target.value ? Number(e.target.value) : undefined as any)}
-              placeholder="50000"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm"
-            />
+            <label className="block text-[11px] text-zinc-400 dark:text-zinc-600 mb-1">Min</label>
+            <input type="number" value={formData.compensation?.min || ''} onChange={(e) => updateCompensation('min', e.target.value ? Number(e.target.value) : undefined as any)} placeholder="50000" className={inputClass} />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max</label>
-            <input
-              type="number"
-              value={formData.compensation?.max || ''}
-              onChange={(e) => updateCompensation('max', e.target.value ? Number(e.target.value) : undefined as any)}
-              placeholder="75000"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm"
-            />
+            <label className="block text-[11px] text-zinc-400 dark:text-zinc-600 mb-1">Max</label>
+            <input type="number" value={formData.compensation?.max || ''} onChange={(e) => updateCompensation('max', e.target.value ? Number(e.target.value) : undefined as any)} placeholder="75000" className={inputClass} />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Currency</label>
-            <input
-              type="text"
-              value={formData.compensation?.currency || 'USD'}
-              onChange={(e) => updateCompensation('currency', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm"
-            />
+            <label className="block text-[11px] text-zinc-400 dark:text-zinc-600 mb-1">Currency</label>
+            <input type="text" value={formData.compensation?.currency || 'USD'} onChange={(e) => updateCompensation('currency', e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Period</label>
-            <select
-              value={formData.compensation?.period || 'annual'}
-              onChange={(e) => updateCompensation('period', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm"
-            >
+            <label className="block text-[11px] text-zinc-400 dark:text-zinc-600 mb-1">Period</label>
+            <select value={formData.compensation?.period || 'annual'} onChange={(e) => updateCompensation('period', e.target.value)} className={inputClass}>
               <option value="annual">Annual</option>
               <option value="hourly">Hourly</option>
             </select>
@@ -376,78 +300,38 @@ export const AddJobForm = ({ onSuccess, onCancel }: AddJobFormProps) => {
         </div>
       </div>
 
-      {/* Job Description Summary */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Description Summary</label>
-        <textarea
-          value={formData.descriptionSummary}
-          onChange={(e) => updateField('descriptionSummary', e.target.value)}
-          rows={4}
-          placeholder="Brief summary of the role and requirements..."
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-        />
+      {/* Description */}
+      <div className="mb-5">
+        <label className={labelClass}>Description Summary</label>
+        <textarea value={formData.descriptionSummary} onChange={(e) => updateField('descriptionSummary', e.target.value)} rows={3} placeholder="Brief summary..." className={inputClass} />
       </div>
 
       {/* Tags */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Tags (Optional)
-        </label>
-        <input
-          type="text"
-          value={formData.tags.join(', ')}
-          onChange={(e) => updateField('tags', e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0))}
-          placeholder="e.g., React, Senior, FinTech, Remote..."
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-        />
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          Add tags separated by commas to categorize this job (technologies, industry, skills, etc.)
-        </p>
+      <div className="mb-5">
+        <label className={labelClass}>Tags</label>
+        <input type="text" value={formData.tags.join(', ')} onChange={(e) => updateField('tags', e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0))} placeholder="React, Senior, FinTech..." className={inputClass} />
       </div>
 
-      {/* User Notes */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Your Notes (Optional)
-        </label>
-        <textarea
-          value={userNotes}
-          onChange={(e) => setUserNotes(e.target.value)}
-          rows={3}
-          placeholder="Any notes about this role? (e.g., key talking points, who you spoke with, why you're excited)"
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-        />
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          These notes will be used to personalize follow-up emails
-        </p>
+      {/* Notes */}
+      <div className="mb-5">
+        <label className={labelClass}>Your Notes</label>
+        <textarea value={userNotes} onChange={(e) => setUserNotes(e.target.value)} rows={2} placeholder="Talking points, contacts, why you're excited..." className={inputClass} />
       </div>
 
-      {/* Have you applied? */}
-      <div className="mb-6">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={hasApplied}
-            onChange={(e) => setHasApplied(e.target.checked)}
-            className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
-          />
-          <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">I have already applied to this job</span>
+      {/* Applied checkbox */}
+      <div className="mb-5">
+        <label className="flex items-center gap-2.5 cursor-pointer">
+          <input type="checkbox" checked={hasApplied} onChange={(e) => setHasApplied(e.target.checked)} className="w-4 h-4 text-indigo-600 border-zinc-300 dark:border-zinc-600 rounded focus:ring-indigo-500" />
+          <span className="text-[13px] text-zinc-600 dark:text-zinc-400">I have already applied</span>
         </label>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <button
-          onClick={handleSave}
-          disabled={isLoading}
-          className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-        >
+      {/* Actions */}
+      <div className="flex gap-2">
+        <button onClick={handleSave} disabled={isLoading} className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-400 disabled:opacity-40 disabled:cursor-not-allowed transition text-[13px] font-medium">
           {isLoading ? 'Saving...' : 'Save Application'}
         </button>
-        <button
-          onClick={onCancel}
-          className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-        >
+        <button onClick={onCancel} className="px-5 py-2.5 text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition text-[13px]">
           Cancel
         </button>
       </div>

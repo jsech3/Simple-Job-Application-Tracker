@@ -37,46 +37,59 @@ export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
 
   // Format compensation
   const formatCompensation = () => {
-    if (!job.parsedData.compensation) return 'Not specified';
+    if (!job.parsedData.compensation) return null;
 
     const { min, max, currency, period } = job.parsedData.compensation;
-    const periodLabel = period === 'annual' ? '/year' : '/hour';
+    const periodLabel = period === 'annual' ? '/yr' : '/hr';
 
     if (min && max) {
-      return `${currency} ${min.toLocaleString()} - ${max.toLocaleString()}${periodLabel}`;
+      return `${currency} ${(min / 1000).toFixed(0)}k\u2013${(max / 1000).toFixed(0)}k${periodLabel}`;
     } else if (min) {
-      return `${currency} ${min.toLocaleString()}+${periodLabel}`;
+      return `${currency} ${(min / 1000).toFixed(0)}k+${periodLabel}`;
     } else if (max) {
-      return `Up to ${currency} ${max.toLocaleString()}${periodLabel}`;
+      return `\u2264${currency} ${(max / 1000).toFixed(0)}k${periodLabel}`;
     }
 
-    return 'Not specified';
+    return null;
   };
 
-  // Work environment badge color
-  const getWorkEnvColor = () => {
+  // Status dot color
+  const getStatusColor = () => {
+    switch (latestStatus) {
+      case ApplicationStatus.Applied: return 'bg-zinc-400';
+      case ApplicationStatus.PhoneScreenScheduled:
+      case ApplicationStatus.PhoneScreenCompleted: return 'bg-blue-400';
+      case ApplicationStatus.TechnicalInterview:
+      case ApplicationStatus.FinalInterview: return 'bg-amber-400';
+      case ApplicationStatus.OfferReceived: return 'bg-emerald-400';
+      case ApplicationStatus.Rejected: return 'bg-red-400';
+      case ApplicationStatus.Withdrawn: return 'bg-zinc-500';
+      default: return 'bg-zinc-400';
+    }
+  };
+
+  // Work environment badge
+  const getWorkEnvStyle = () => {
     switch (job.parsedData.workEnvironment) {
-      case 'Remote':
-        return 'bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300';
-      case 'Hybrid':
-        return 'bg-yellow-50 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300';
-      case 'In-Office':
-        return 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
-      default:
-        return 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+      case 'Remote': return 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10';
+      case 'Hybrid': return 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10';
+      case 'In-Office': return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10';
+      default: return 'text-zinc-500 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800';
     }
   };
+
+  const comp = formatCompensation();
 
   return (
     <div
       onClick={onClick}
-      className="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:shadow-lg transition-shadow cursor-pointer [&:has([data-headlessui-state~='open'])]:z-50"
+      className="accent-bar group relative bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all cursor-pointer [&:has([data-headlessui-state~='open'])]:z-50"
     >
-      {/* Header */}
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{job.parsedData.title}</h3>
-          <p className="text-md text-gray-700 dark:text-gray-300">{job.parsedData.company}</p>
+      {/* Top row: company + status dropdown */}
+      <div className="flex justify-between items-start mb-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 leading-tight truncate">{job.parsedData.title}</h3>
+          <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mt-0.5">{job.parsedData.company}</p>
         </div>
         <QuickStatusDropdown
           currentStatus={latestStatus}
@@ -85,56 +98,53 @@ export const JobCard = ({ job, onClick, onUpdate }: JobCardProps) => {
         />
       </div>
 
-      {/* Details */}
-      <div className="space-y-2 mb-4">
+      {/* Meta row */}
+      <div className="flex items-center gap-3 text-[12px] text-zinc-400 dark:text-zinc-500 mb-3">
         {job.parsedData.location && (
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {job.parsedData.location}
-          </div>
+          <span className="truncate">{job.parsedData.location}</span>
         )}
-
-        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {formatCompensation()}
-        </div>
+        {comp && (
+          <>
+            <span className="text-zinc-300 dark:text-zinc-700">&middot;</span>
+            <span className="text-zinc-600 dark:text-zinc-400 font-medium whitespace-nowrap">{comp}</span>
+          </>
+        )}
       </div>
 
       {/* Badges */}
-      <div className="flex flex-wrap gap-2 mb-3">
-        <span className={`px-2 py-1 rounded text-xs font-medium ${getWorkEnvColor()}`}>
+      <div className="flex flex-wrap gap-1.5 mb-2.5">
+        {/* Status badge with dot */}
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+          <span className={`w-1.5 h-1.5 rounded-full ${getStatusColor()}`} />
+          {latestStatus}
+        </span>
+        <span className={`px-2 py-0.5 rounded-md text-[11px] font-medium ${getWorkEnvStyle()}`}>
           {job.parsedData.workEnvironment}
-        </span>
-        <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-          {job.parsedData.workType}
-        </span>
-        <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-          {job.parsedData.platform}
         </span>
       </div>
 
       {/* Tags */}
       {job.parsedData.tags && job.parsedData.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {job.parsedData.tags.map((tag, index) => (
+        <div className="flex flex-wrap gap-1 mb-2.5">
+          {job.parsedData.tags.slice(0, 4).map((tag, index) => (
             <span
               key={index}
-              className="px-2 py-0.5 rounded-full text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+              className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
             >
-              #{tag}
+              {tag}
             </span>
           ))}
+          {job.parsedData.tags.length > 4 && (
+            <span className="px-1.5 py-0.5 rounded text-[10px] text-zinc-400 dark:text-zinc-600">
+              +{job.parsedData.tags.length - 4}
+            </span>
+          )}
         </div>
       )}
 
       {/* Footer */}
-      <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-700">
-        <span>Applied {formatDistanceToNow(new Date(job.applicationDate), { addSuffix: true })}</span>
+      <div className="flex justify-between items-center text-[11px] text-zinc-400 dark:text-zinc-600 pt-2.5 border-t border-zinc-100 dark:border-zinc-800">
+        <span>{formatDistanceToNow(new Date(job.applicationDate), { addSuffix: true })}</span>
         {job.statusUpdates.length > 0 && (
           <span>{job.statusUpdates.length} update{job.statusUpdates.length !== 1 ? 's' : ''}</span>
         )}

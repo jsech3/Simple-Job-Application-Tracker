@@ -118,6 +118,82 @@ export interface FilterOptions {
   platform?: JobPlatform[];
 }
 
+// ─── Search-related types ────────────────────────────────────────────────────
+
+/** Identifies which source a search result originated from. */
+export type SearchSource = 'jsearch' | 'ai_suggestion' | 'manual_import' | 'hn_search';
+
+/** Identifies which tab is active in the Job Search view. */
+export type SearchTab = 'api_search' | 'ai_suggestions' | 'manual_import' | 'hn_search';
+
+/**
+ * A single job listing returned from any search source (JSearch API,
+ * AI-generated query, or manual paste-and-parse).
+ *
+ * Held in React state only — **not** persisted to storage.
+ * When the user imports a result it is converted to a {@link JobApplication}.
+ */
+export interface SearchResult {
+  /** Unique ID (UUID v4) generated at normalization time. */
+  id: string;
+  /** Which pipeline produced this result. */
+  source: SearchSource;
+  title: string;
+  company: string;
+  location: string;
+  compensation: Compensation | null;
+  workEnvironment: WorkEnvironment;
+  workType: WorkType;
+  /** Original publishing platform (LinkedIn, Indeed, etc.). */
+  platform: JobPlatform;
+  /** Full or summarized job description text. */
+  description: string;
+  /** Direct apply / posting URL (may be empty for manual imports). */
+  url: string;
+  tags: string[];
+  benefits: string[];
+  /** Whether this result has already been imported into the tracker. */
+  imported: boolean;
+}
+
+/**
+ * Filter parameters sent to the JSearch API (and used by the SearchFilters UI).
+ */
+export interface JobSearchFilters {
+  /** Keywords, job title, or skills to search for. */
+  query: string;
+  /** Geographic filter (city, state, country). */
+  location: string;
+  /** Empty string means "any". */
+  workEnvironment: WorkEnvironment | '';
+  /** Empty string means "any". */
+  workType: WorkType | '';
+  remoteOnly: boolean;
+  /** How recently the job was posted. */
+  datePosted: 'all' | 'today' | '3days' | 'week' | 'month';
+  /** 1-based page number for pagination. */
+  page: number;
+  pageSize: number;
+}
+
+/**
+ * Persisted user profile used by the AI Suggestions tab.
+ *
+ * Claude reads this profile to generate smart JSearch queries.
+ * Stored under the `user_profile` localStorage / chrome.storage key.
+ */
+export interface UserProfile {
+  skills: string[];
+  desiredTitles: string[];
+  preferredLocations: string[];
+  workEnvironmentPreference: WorkEnvironment | '';
+  workTypePreference: WorkType | '';
+  /** Minimum acceptable annual salary (USD). */
+  salaryMin: number | null;
+  experienceLevel: 'entry' | 'mid' | 'senior' | 'lead' | 'executive' | '';
+  industries: string[];
+}
+
 // Statistics for data visualization
 export interface ApplicationStats {
   total: number;

@@ -2,23 +2,34 @@
 
 @variant dark (&:where(.dark, .dark *));
 
-/* CSS Variables for theming */
+/* ─── Editorial Dark Theme ─────────────────────────────────────────── */
+
 :root {
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-border: #e5e7eb;
-  --color-accent: #3b82f6;
+  --color-bg-secondary: #f8f8f8;
+  --color-bg-elevated: #ffffff;
+  --color-text-primary: #0a0a0a;
+  --color-text-secondary: #6b6b6b;
+  --color-text-muted: #999999;
+  --color-border: #e5e5e5;
+  --color-border-subtle: #f0f0f0;
+  --color-accent: #6366f1;
+  --color-accent-soft: #eef2ff;
+  --color-surface: rgba(255, 255, 255, 0.8);
 }
 
 .dark {
-  --color-bg-primary: #111827;
-  --color-bg-secondary: #1f2937;
-  --color-text-primary: #f9fafb;
-  --color-text-secondary: #9ca3af;
-  --color-border: #374151;
-  --color-accent: #60a5fa;
+  --color-bg-primary: #09090b;
+  --color-bg-secondary: #0f0f12;
+  --color-bg-elevated: #141418;
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #52525b;
+  --color-border: #27272a;
+  --color-border-subtle: #1c1c1f;
+  --color-accent: #818cf8;
+  --color-accent-soft: rgba(99, 102, 241, 0.1);
+  --color-surface: rgba(20, 20, 24, 0.7);
 }
 
 /* Smooth transitions for theme switching */
@@ -43,23 +54,79 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.011em;
 }
 
-/* Custom scrollbar for dark mode */
+/* ─── Scrollbar ────────────────────────────────────────────────────── */
+
 .dark ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: transparent;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 4px;
+  background: #27272a;
+  border-radius: 3px;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+  background: #3f3f46;
+}
+
+/* ─── Utility classes ──────────────────────────────────────────────── */
+
+/* Glass card surface */
+.glass-card {
+  background: var(--color-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+}
+
+/* Accent left border for cards */
+.accent-bar {
+  position: relative;
+}
+.accent-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--color-accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.accent-bar:hover::before {
+  opacity: 1;
+}
+
+/* Subtle noise texture overlay */
+.noise-bg {
+  position: relative;
+}
+.noise-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Fade-in animation for toasts */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeInUp 0.3s ease-out;
 }

@@ -96,7 +96,34 @@ const getBrowserAPI = (): BrowserAPI => {
     };
   }
 
-  throw new Error('Browser extension API not found');
+  // In non-extension context (dev mode), return a no-op stub so modules
+  // that import `storage` can load without crashing. The services use
+  // `isExtension` guards and fall back to localStorage at runtime.
+  return {
+    storage: {
+      local: {
+        get: async () => ({}),
+        set: async () => {},
+        remove: async () => {},
+        clear: async () => {},
+      },
+      sync: {
+        get: async () => ({}),
+        set: async () => {},
+        remove: async () => {},
+        clear: async () => {},
+      },
+    },
+    runtime: {
+      sendMessage: async () => {},
+      onMessage: { addListener: () => {} },
+      getURL: (path: string) => path,
+    },
+    tabs: {
+      query: async () => [],
+      sendMessage: async () => {},
+    },
+  };
 };
 
 export const browserAPI = getBrowserAPI();

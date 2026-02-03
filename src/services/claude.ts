@@ -7,6 +7,8 @@ import {
   WorkType,
   JobPlatform,
   JobApplication,
+  UserProfile,
+  SearchResult,
 } from '../types';
 import { storage } from '../extension/browser-polyfill';
 
@@ -140,7 +142,7 @@ Important:
       const client = await this.getClient();
 
       const message = await client.messages.create({
-        model: 'claude-3-7-sonnet-20250219',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 2000,
         messages: [
           {
@@ -232,7 +234,7 @@ Return ONLY valid JSON, no additional text.`;
       const client = await this.getClient();
 
       const message = await client.messages.create({
-        model: 'claude-3-7-sonnet-20250219',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 1000,
         messages: [
           {
@@ -265,6 +267,149 @@ Return ONLY valid JSON, no additional text.`;
         success: false,
         error: error instanceof Error ? error.message : 'Failed to generate email',
       };
+    }
+  }
+
+  /**
+   * Generate smart job search queries from a user's profile.
+   *
+   * Sends the user's skills, desired titles, locations, and preferences to
+   * Claude, which returns 5 diverse search queries. These queries are then
+   * executed against JSearch to find real listings (no hallucinated jobs).
+   *
+   * @param profile - The user's saved profile with skills, titles, etc.
+   * @returns An object containing an array of `{ query, location }` pairs.
+   * @throws If the API key is missing or the Claude request fails.
+   */
+  static async suggestJobSearches(profile: UserProfile): Promise<{ queries: { query: string; location: string }[] }> {
+    try {
+      const prompt = `You are a career advisor helping a job seeker find relevant positions.
+
+User Profile:
+- Skills: ${profile.skills.join(', ') || 'Not specified'}
+- Desired job titles: ${profile.desiredTitles.join(', ') || 'Not specified'}
+- Preferred locations: ${profile.preferredLocations.join(', ') || 'Anywhere'}
+- Work environment preference: ${profile.workEnvironmentPreference || 'Any'}
+- Work type preference: ${profile.workTypePreference || 'Any'}
+- Minimum salary: ${profile.salaryMin ? `$${profile.salaryMin.toLocaleString()}` : 'Not specified'}
+- Experience level: ${profile.experienceLevel || 'Not specified'}
+- Industries: ${profile.industries.join(', ') || 'Any'}
+
+Generate 5 diverse, specific job search queries that would find relevant positions for this person. Each query should target a different angle (e.g., exact title, related title, skill-based search, industry-specific, etc.).
+
+Return ONLY valid JSON in this format:
+{
+  "queries": [
+    { "query": "search query text", "location": "location or empty string" },
+    ...
+  ]
+}`;
+
+      const client = await this.getClient();
+
+      const message = await client.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }],
+      });
+
+      const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not extract JSON from Claude response');
+      }
+
+      return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+      console.error('Error generating job search suggestions:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Parse one or more pasted job descriptions into structured {@link SearchResult} objects.
+   *
+   * The user pastes raw text (which may contain multiple job postings separated
+   * by blank lines or headers). Claude extracts each posting and returns
+   * structured JSON that is mapped to `SearchResult[]`.
+   *
+   * @param text - Raw text containing one or more job descriptions (max 15 000 chars sent to API).
+   * @returns Array of parsed search results with `source: 'manual_import'`.
+   * @throws If the API key is missing or Claude cannot parse the text.
+   */
+  static async parseMultipleDescriptions(text: string): Promise<SearchResult[]> {
+    try {
+      const prompt = `You are a job posting parser. The user has pasted one or more job descriptions below. Parse each distinct job posting into structured data.
+
+If the text contains multiple job postings, separate them and parse each one individually. If it's a single posting, return an array with one element.
+
+Text:
+${text.substring(0, 15000)}
+
+Return ONLY valid JSON in this format:
+{
+  "jobs": [
+    {
+      "title": "job title",
+      "company": "company name",
+      "location": "city, state, country",
+      "compensation": {
+        "min": number or null,
+        "max": number or null,
+        "currency": "USD",
+        "period": "annual" or "hourly"
+      } or null,
+      "workEnvironment": "Remote" | "Hybrid" | "In-Office" | "Not Specified",
+      "workType": "Full-time" | "Part-time" | "Contract" | "Internship" | "Not Specified",
+      "description": "brief 150-word summary of the role",
+      "url": "",
+      "tags": ["tag1", "tag2", "tag3"],
+      "benefits": ["benefit1", "benefit2"]
+    }
+  ]
+}
+
+Important:
+- If compensation is not stated, set it to null
+- Return ONLY valid JSON, no additional text
+- For workEnvironment and workType, use exact strings from the options provided`;
+
+      const client = await this.getClient();
+
+      const message = await client.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }],
+      });
+
+      const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not extract JSON from Claude response');
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]);
+      const { v4: uuidv4 } = await import('uuid');
+
+      return (parsed.jobs || []).map((job: any): SearchResult => ({
+        id: uuidv4(),
+        source: 'manual_import' as const,
+        title: job.title || 'Unknown Title',
+        company: job.company || 'Unknown Company',
+        location: job.location || '',
+        compensation: job.compensation || null,
+        workEnvironment: (job.workEnvironment as WorkEnvironment) || WorkEnvironment.NotSpecified,
+        workType: (job.workType as WorkType) || WorkType.NotSpecified,
+        platform: JobPlatform.Other,
+        description: job.description || '',
+        url: job.url || '',
+        tags: job.tags || [],
+        benefits: job.benefits || [],
+        imported: false,
+      }));
+    } catch (error) {
+      console.error('Error parsing multiple descriptions:', error);
+      throw error;
     }
   }
 }

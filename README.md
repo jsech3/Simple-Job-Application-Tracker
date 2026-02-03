@@ -34,6 +34,13 @@ A zero-friction job application tracker with automatic parsing and intelligent t
   - Compensation ranges
   - Response rate and average response time
 
+- **Job Search** (NEW): Find jobs without leaving the tracker:
+  - **Search Job Boards** — keyword + location search via JSearch API (aggregates LinkedIn, Indeed, Glassdoor, ZipRecruiter)
+  - **AI Suggestions** — fill in your profile and Claude generates smart search queries, then runs them through JSearch for real listings
+  - **Manual Import** — paste one or more raw job descriptions, Claude parses them into structured results
+  - Single-click preview-and-import or batch-select multiple results
+  - Duplicate detection by URL and title+company match
+
 - **Export Functionality**: Never lose your data with:
   - JSON export (full backup)
   - CSV export (spreadsheet-compatible)
@@ -48,11 +55,13 @@ A zero-friction job application tracker with automatic parsing and intelligent t
 ## Tech Stack
 
 - **Frontend**: React 19 with TypeScript
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS 4
 - **Charts**: Recharts
-- **AI Integration**: Anthropic Claude API
-- **Build Tool**: Vite
-- **Storage**: Browser localStorage
+- **Animations**: Framer Motion
+- **AI Integration**: Anthropic Claude API (`@anthropic-ai/sdk`)
+- **Job Search API**: JSearch via RapidAPI
+- **Build Tool**: Vite 7
+- **Storage**: Browser localStorage / Chrome extension storage
 
 ## Getting Started
 
@@ -78,10 +87,16 @@ npm install
 cp .env.example .env
 ```
 
-4. Add your Anthropic API key to `.env`:
+4. Add your API keys to `.env`:
 ```
-VITE_ANTHROPIC_API_KEY=your_api_key_here
+VITE_ANTHROPIC_API_KEY=your_anthropic_api_key_here
+VITE_JSEARCH_API_KEY=your_rapidapi_key_here
 ```
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_ANTHROPIC_API_KEY` | For AI features | Anthropic API key for Claude (parsing, emails, AI suggestions, bulk import) |
+| `VITE_JSEARCH_API_KEY` | For job search | RapidAPI key subscribed to [JSearch](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch) (free tier: 200 req/month) |
 
 5. Start the development server:
 ```bash
@@ -168,34 +183,62 @@ npm run preview
 2. Choose "Export as JSON" for a full backup
 3. Choose "Export as CSV" for spreadsheet compatibility
 
+### Searching for Jobs
+
+1. Click **Search** in the top navigation
+2. Choose one of three tabs:
+
+**Search Job Boards:**
+1. Enter keywords (e.g. "frontend developer") and optionally a location
+2. Adjust filters (work environment, type, date posted, remote-only)
+3. Click **Search** or press Enter
+4. Click any result card to preview — edit fields, add notes, then "Import to Tracker"
+5. Or check multiple cards and use the sticky bottom bar to **Import Selected**
+
+**AI Suggestions:**
+1. Fill in your profile (skills, desired titles, locations, experience level, etc.)
+2. Click **Generate Search Suggestions**
+3. Claude returns 5 targeted queries — click any to search JSearch
+4. Review and import results the same way as the Search tab
+
+**Manual Import:**
+1. Paste one or more raw job descriptions into the text area
+2. Click **Parse with AI** — Claude extracts each posting
+3. Parsed results appear in the grid below for review and import
+
+**Duplicate detection:** Results already in your tracker are dimmed and marked "Imported". During batch import, duplicates are automatically skipped.
+
 ## Project Structure
 
 ```
-job-tracking-dashboard/
-├── src/
-│   ├── components/          # React components
-│   │   ├── AddJobForm.tsx
-│   │   ├── Dashboard.tsx
-│   │   ├── EmailGenerator.tsx
-│   │   ├── FollowUpReminders.tsx
-│   │   ├── JobCard.tsx
-│   │   ├── JobDetail.tsx
-│   │   └── Statistics.tsx
-│   ├── services/            # Business logic
-│   │   ├── claude.ts        # Claude API integration
-│   │   └── storage.ts       # localStorage management
-│   ├── types/              # TypeScript definitions
-│   │   └── index.ts
-│   ├── App.tsx             # Main application
-│   ├── main.tsx            # Entry point
-│   └── index.css           # Global styles
-├── index.html
-├── package.json
-├── tsconfig.json
-├── tailwind.config.js
-├── vite.config.ts
-├── .env.example
-└── README.md
+src/
+├── components/
+│   ├── search/                      # Job Search sub-components
+│   │   ├── SearchFilters.tsx        # Keyword, location, and dropdown filters
+│   │   ├── SearchResultCard.tsx     # Result card with batch-select checkbox
+│   │   ├── SearchResultPreview.tsx  # Edit-and-import modal
+│   │   └── BulkImportPanel.tsx      # Paste & parse with Claude
+│   ├── JobSearch.tsx                # Main search page (3-tab container)
+│   ├── Dashboard.tsx                # Application list with filtering/sorting
+│   ├── AddJobForm.tsx               # AI-parse or manual entry form
+│   ├── JobCard.tsx                  # Application card in the dashboard grid
+│   ├── JobDetail.tsx                # Full application detail modal
+│   ├── Statistics.tsx               # Charts and analytics
+│   ├── EmailGenerator.tsx           # AI follow-up email composer
+│   ├── FollowUpReminders.tsx        # Reminder banner
+│   └── ...                          # Onboarding, dark mode, demo panel
+├── services/
+│   ├── claude.ts                    # All Claude AI interactions
+│   ├── jobSearch.ts                 # JSearch API client
+│   └── storage.ts                   # localStorage / chrome.storage CRUD
+├── types/
+│   └── index.ts                     # All TypeScript interfaces and enums
+├── hooks/                           # useDarkMode, useOnboarding
+├── animations/
+│   └── variants.ts                  # Framer Motion animation presets
+├── extension/                       # Chrome extension entry points
+├── App.tsx                          # Root component and view router
+└── main.tsx                         # Vite entry point
 ```
 
 ## Important Notes
@@ -210,11 +253,15 @@ Due to browser security restrictions (CORS), some job posting URLs may not be ac
 
 ### API Costs
 
-This app uses the Claude API which has associated costs:
+**Claude API** (Anthropic) — pay-per-use:
 - Job parsing: ~1-2 cents per parse
 - Email generation: ~0.5-1 cent per email
+- AI search suggestions: ~0.5-1 cent per generation
+- Bulk import parsing: ~1-3 cents per batch (depends on text length)
 
 Monitor your usage at [console.anthropic.com](https://console.anthropic.com/).
+
+**JSearch API** (RapidAPI) — free tier: 200 requests/month. Each search or AI-suggested query uses 1 request. Paid plans available for higher volume.
 
 ### Data Privacy
 
