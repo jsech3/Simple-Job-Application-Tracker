@@ -4,11 +4,14 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import { copyFileSync, mkdirSync } from 'fs'
 
+const isExtensionBuild = process.env.BUILD_TARGET === 'extension'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    {
+    // Only copy extension files for extension builds
+    ...(isExtensionBuild ? [{
       name: 'copy-manifest',
       closeBundle() {
         // Copy manifest and icons to dist
@@ -31,14 +34,15 @@ export default defineConfig({
           resolve(distDir, 'icons/icon-128.png')
         )
       }
-    }
+    }] : [])
   ],
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
   },
-  build: {
+  build: isExtensionBuild ? {
+    // Chrome extension build configuration
     rollupOptions: {
       input: {
         sidepanel: resolve(__dirname, 'sidepanel.html'),
@@ -58,6 +62,10 @@ export default defineConfig({
         assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
+    outDir: 'dist',
+    emptyOutDir: true,
+  } : {
+    // Web app build configuration (default)
     outDir: 'dist',
     emptyOutDir: true,
   },

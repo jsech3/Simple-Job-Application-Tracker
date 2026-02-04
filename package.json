@@ -5,11 +5,12 @@
   "type": "commonjs",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "build:ext": "vite build",
-    "build:ext:check": "tsc && vite build",
+    "build": "vite build",
+    "build:web": "vite build",
+    "build:ext": "BUILD_TARGET=extension vite build",
+    "build:ext:check": "tsc && BUILD_TARGET=extension vite build",
     "preview": "vite preview",
-    "watch:ext": "vite build --watch",
+    "watch:ext": "BUILD_TARGET=extension vite build --watch",
     "test": "vitest run",
     "test:watch": "vitest"
   },
